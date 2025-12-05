@@ -322,7 +322,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
               
             </p>
             <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full">
-              Bulletin généré le {new Date().toLocaleDateString()} à {new Date().toLocaleTimeString()}
+              
             </p>
           </footer>
 
