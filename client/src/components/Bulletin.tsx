@@ -53,7 +53,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         @media print {
           @page { 
             size: A4 portrait; 
-            margin: 0; 
+            margin: 5mm; 
           }
           
           html, body { 
@@ -61,104 +61,105 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             padding: 0 !important;
             background: white !important;
             height: auto !important;
-            min-height: 0 !important;
+            min-height: auto !important;
+            max-height: none !important;
             overflow: visible !important;
           }
 
-          /* Hide non-printable elements */
           .no-print { display: none !important; }
           
-          /* Reset all containers */
           #root, 
-          .print-container,
-          .min-h-screen {
+          #root > div,
+          .print-container {
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
             height: auto !important;
-            min-height: 0 !important;
+            min-height: auto !important;
+            max-height: none !important;
             display: block !important;
             overflow: visible !important;
           }
 
-          /* Hide the shadow container wrapper */
+          .mb-20 {
+            margin-bottom: 0 !important;
+          }
+
           .shadow-2xl {
             box-shadow: none !important;
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
+            border-radius: 0 !important;
           }
 
-          /* The bulletin sheet itself */
           #bulletin-content {
             margin: 0 !important;
-            padding: 8mm !important;
-            width: 210mm !important;
+            padding: 5mm !important;
+            width: 100% !important;
             height: auto !important;
-            min-height: 0 !important;
+            min-height: auto !important;
             max-height: none !important;
             box-shadow: none !important;
             border: none !important;
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
             background: white !important;
             overflow: visible !important;
-            page-break-after: avoid !important;
-            page-break-inside: avoid !important;
           }
 
-          /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          
-          /* Prevent breaks inside key elements */
-          section, table, .grid {
-            page-break-inside: avoid !important;
-          }
-
-          /* Scale down content to fit */
-          #bulletin-content * {
-            font-size: 95% !important;
-          }
-
-          /* Reduce spacing */
-          #bulletin-content section {
-            margin-bottom: 4mm !important;
-          }
 
           #bulletin-content .mb-8 {
-            margin-bottom: 4mm !important;
-          }
-
-          #bulletin-content .mb-6 {
             margin-bottom: 3mm !important;
           }
 
-          #bulletin-content .p-8 {
-            padding: 4mm !important;
+          #bulletin-content .mb-6 {
+            margin-bottom: 2mm !important;
           }
 
-          #bulletin-content .p-6 {
+          #bulletin-content .mb-4 {
+            margin-bottom: 2mm !important;
+          }
+
+          #bulletin-content .p-8 {
             padding: 3mm !important;
           }
 
+          #bulletin-content .p-6 {
+            padding: 2mm !important;
+          }
+
           #bulletin-content .p-5 {
-            padding: 2.5mm !important;
+            padding: 2mm !important;
+          }
+
+          #bulletin-content .p-4 {
+            padding: 2mm !important;
           }
 
           #bulletin-content .gap-8 {
-            gap: 4mm !important;
+            gap: 3mm !important;
           }
 
           #bulletin-content .gap-4 {
             gap: 2mm !important;
           }
+
+          #bulletin-content .pb-4 {
+            padding-bottom: 2mm !important;
+          }
+
+          #bulletin-content .pt-4 {
+            padding-top: 2mm !important;
+          }
+
+          footer {
+            margin-top: 2mm !important;
+          }
         }
 
-        /* Web view styles */
         @media screen {
           #bulletin-content {
             width: 210mm;
