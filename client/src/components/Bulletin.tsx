@@ -96,7 +96,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             
             /* LE SECRET FINAL : Un léger zoom arrière pour garantir que ça rentre dans les marges imprimante */
             transform: scale(0.95); 
-            transform-origin: top left;
+            transform-origin: top center;
             
             /* Permet au contenu de s'adapter */
             display: flex;
@@ -208,7 +208,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           </section>
 
           {/* DATA TABLE */}
-          <section className="mb-8 flex-grow">
+          <section className="mb-8">
             <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm border-b border-slate-200 pb-2 flex items-center gap-2 tracking-wide">
               <Wind className="w-4 h-4" />
               Détails du Réseau de Surveillance (Concentrations Max)
