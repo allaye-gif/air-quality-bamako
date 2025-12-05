@@ -112,7 +112,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           #bulletin-content {
             /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
-            min-height: 297mm;
+            min-height: 296mm;
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
