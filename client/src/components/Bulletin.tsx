@@ -10,12 +10,12 @@ interface BulletinProps {
 }
 
 const COLORS = {
-  good: '#4ade80',     
-  moderate: '#facc15', 
-  unhealthySens: '#fb923c', 
-  unhealthy: '#f87171', 
-  veryUnhealthy: '#a855f7', 
-  hazardous: '#be123c', 
+  good: '#4ade80',
+  moderate: '#facc15',
+  unhealthySens: '#fb923c',
+  unhealthy: '#f87171',
+  veryUnhealthy: '#a855f7',
+  hazardous: '#be123c',
 };
 
 const getStatusColor = (aqi: number) => {
@@ -39,7 +39,6 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
     setTimeout(() => {
       window.print();
-      
       setTimeout(() => {
         document.title = originalTitle;
       }, 500);
@@ -50,58 +49,52 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
   return (
     <div className="flex flex-col items-center bg-slate-100 min-h-screen p-8">
+
       <style>{`
         @media print {
-          /* Masquer uniquement les éléments avec la classe no-print */
+          @page { 
+            size: A4 portrait;
+            margin: 0;
+          }
+
+          body {
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+
           .no-print {
             display: none !important;
           }
-          
-          /* Mise en page A4 */
-          @page {
-            size: A4 portrait;
-            margin: 10mm;
-          }
-          
-          /* Réinitialiser le body pour l'impression */
-          body {
+
+          #root, .min-h-screen {
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            height: auto !important;
+            min-height: 0 !important;
           }
-          
-          /* Le contenu du bulletin */
+
           #bulletin-content {
-            width: 100% !important;
-            max-width: 210mm !important;
-            margin: 0 auto !important;
-            padding: 0 !important;
+            margin: 0 !important;
+            padding: 10mm !important;
+            width: 210mm !important;
+            background: white !important;
             box-shadow: none !important;
             border: none !important;
-            background: white !important;
+            overflow: visible !important;
           }
-          
-          /* Assurer que les couleurs s'impriment */
+
           * {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          
-          /* Éviter les sauts de page dans les sections importantes */
-          section {
-            page-break-inside: avoid;
-            break-inside: avoid;
-          }
-          
-          table {
-            page-break-inside: avoid;
-            break-inside: avoid;
+
+          section, table, .grid {
+            page-break-inside: avoid !important;
           }
         }
 
-        /* Prévisualisation web */
         @media screen {
           #bulletin-content {
             width: 210mm;
@@ -112,7 +105,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           }
         }
       `}</style>
-      
+
       <div className="flex gap-4 mb-8 sticky top-4 z-50 bg-white/90 backdrop-blur p-3 rounded-full shadow-lg border no-print">
         <Button variant="outline" onClick={onReset} className="rounded-full">
           Nouveau
@@ -124,28 +117,29 @@ export function Bulletin({ data, onReset }: BulletinProps) {
       </div>
 
       <div className="shadow-2xl mb-20 bg-white rounded-lg overflow-hidden">
-        <div 
+        <div
           ref={contentRef}
           id="bulletin-content"
           className="relative text-slate-800 flex flex-col p-[15mm] box-border"
         >
+
           {/* HEADER */}
-          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-4 mb-6 before:content-none after:content-none">
+          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-4 mb-6">
             <div className="w-1/4 flex flex-col items-center justify-center">
-               <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100 shadow-sm relative z-20">
-                 <img 
-                   src={logoMaliMeteo} 
-                   alt="Logo MALI METEO" 
-                   className="w-full h-full object-cover scale-110" 
-                 />
-               </div>
+              <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100 shadow-sm relative z-20">
+                <img 
+                  src={logoMaliMeteo} 
+                  alt="Logo MALI METEO" 
+                  className="w-full h-full object-cover scale-110" 
+                />
+              </div>
             </div>
-            
+
             <div className="w-2/4 text-center pt-2 relative z-20 bg-white">
               <h2 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-1">République du Mali</h2>
               <h3 className="text-[10px] italic text-slate-400 mb-2">Un Peuple - Un But - Une Foi</h3>
-              <h1 className="text-3xl font-bold text-blue-900 uppercase font-serif leading-tight mb-2 bg-white">Bulletin<br/>Qualité de l'Air</h1>
-              <div className="text-xs font-bold text-blue-600 uppercase tracking-wide px-4 py-0.5 bg-blue-50 rounded-full inline-block border border-blue-100 relative z-20">
+              <h1 className="text-3xl font-bold text-blue-900 uppercase font-serif leading-tight mb-2">Bulletin<br/>Qualité de l'Air</h1>
+              <div className="text-xs font-bold text-blue-600 uppercase tracking-wide px-4 py-0.5 bg-blue-50 rounded-full inline-block border border-blue-100">
                 Zone de Bamako
               </div>
             </div>
@@ -178,6 +172,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
                   {getAQILabel(data.cityMaxAQI)}
                 </div>
               </div>
+
               <div className="w-2/3 p-8 flex flex-col justify-center">
                 <h3 className="font-bold text-blue-900 uppercase mb-3 text-sm flex items-center gap-2">
                   <Activity className="w-5 h-5" />
@@ -187,7 +182,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
                   L'indice de qualité de l'air (AQI) atteint un maximum de <strong className="text-blue-900 text-lg">{data.cityMaxAQI}</strong> aujourd'hui. 
                   La qualité de l'air est qualifiée de <strong style={{ color: getStatusColor(data.cityMaxAQI) }}>{getAQILabel(data.cityMaxAQI).toLowerCase()}</strong>.
                   <br/><br/>
-                  Le polluant majoritaire observé sur le réseau de surveillance est le <strong className="bg-slate-100 px-2 py-0.5 rounded text-slate-900">{data.stations.find(s => s.aqi === data.cityMaxAQI)?.mainPollutant}</strong>.
+                  Le polluant majoritaire observé est le <strong className="bg-slate-100 px-2 py-0.5 rounded text-slate-900">{data.stations.find(s => s.aqi === data.cityMaxAQI)?.mainPollutant}</strong>.
                 </p>
               </div>
             </div>
@@ -199,6 +194,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
               <Wind className="w-4 h-4" />
               Détails du Réseau de Surveillance (Concentrations Max)
             </h3>
+
             <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
               <table className="w-full text-xs border-collapse">
                 <thead>
@@ -213,6 +209,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
                     <th className="p-3 text-center font-bold border-l border-slate-700 bg-blue-900 w-[15%]">AQI</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {data.stations.map((s, i) => (
                     <tr key={i} className="text-slate-700 odd:bg-white even:bg-slate-50 border-b border-slate-100 last:border-0 hover:bg-blue-50">
@@ -240,82 +237,79 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
           {/* ECO GESTE */}
           <section className="mb-8 grid grid-cols-3 gap-4">
-             <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
-                   <Leaf className="w-6 h-6" />
-                </div>
-                <div>
-                   <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
-                   <p className="text-xs text-emerald-800 leading-snug">
-                      Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
-                   </p>
-                </div>
-             </div>
-             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
-                <div className="flex gap-2 mb-2 text-blue-400">
-                   <Bike className="w-5 h-5" />
-                   <Car className="w-5 h-5 opacity-50" />
-                </div>
-                <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
-             </div>
+            <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+              <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
+                <Leaf className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
+                <p className="text-xs text-emerald-800 leading-snug">
+                  Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
+              <div className="flex gap-2 mb-2 text-blue-400">
+                <Bike className="w-5 h-5" />
+                <Car className="w-5 h-5 opacity-50" />
+              </div>
+              <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
+            </div>
           </section>
 
           {/* LEGEND & ADVICE GRID */}
           <div className="grid grid-cols-2 gap-8 mb-4">
-             {/* Legend */}
-             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                <h3 className="font-bold text-slate-700 uppercase mb-3 text-[11px] flex items-center gap-2 border-b pb-2">
-                  <Info className="w-4 h-4" />
-                  Légende AQI (Indice de Qualité)
-                </h3>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                  {[
-                    { l: 'Bonne (0-50)', c: COLORS.good },
-                    { l: 'Modérée (51-100)', c: COLORS.moderate },
-                    { l: 'Médiocre (101-150)', c: COLORS.unhealthySens },
-                    { l: 'Mauvaise (151-200)', c: COLORS.unhealthy },
-                    { l: 'Très Mauv. (201-300)', c: COLORS.veryUnhealthy },
-                    { l: 'Danger (300+)', c: COLORS.hazardous },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} />
-                      <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span>
-                    </div>
-                  ))}
-                </div>
-             </div>
+            {/* Legend */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+              <h3 className="font-bold text-slate-700 uppercase mb-3 text-[11px] flex items-center gap-2 border-b pb-2">
+                <Info className="w-4 h-4" />
+                Légende AQI (Indice de Qualité)
+              </h3>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                {[
+                  { l: 'Bonne (0-50)', c: COLORS.good },
+                  { l: 'Modérée (51-100)', c: COLORS.moderate },
+                  { l: 'Médiocre (101-150)', c: COLORS.unhealthySens },
+                  { l: 'Mauvaise (151-200)', c: COLORS.unhealthy },
+                  { l: 'Très Mauv. (201-300)', c: COLORS.veryUnhealthy },
+                  { l: 'Danger (300+)', c: COLORS.hazardous },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} />
+                    <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-             {/* Advice */}
-             <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
-                <h3 className="font-bold text-orange-900 uppercase mb-3 text-[11px] flex items-center gap-2 border-b border-orange-200 pb-2">
-                  <ThermometerSun className="w-4 h-4" />
-                  Recommandations
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
-                      <Activity className="w-3 h-3" /> Population Générale
-                    </span>
-                    <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.general}</p>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Personnes Vulnérables
-                    </span>
-                    <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
-                  </div>
+            {/* Advice */}
+            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
+              <h3 className="font-bold text-orange-900 uppercase mb-3 text-[11px] flex items-center gap-2 border-b border-orange-200 pb-2">
+                <ThermometerSun className="w-4 h-4" />
+                Recommandations
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
+                    <Activity className="w-3 h-3" /> Population Générale
+                  </span>
+                  <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.general}</p>
                 </div>
-             </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Personnes Vulnérables
+                  </span>
+                  <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* FOOTER */}
           <footer className="mt-auto text-center border-t-2 border-blue-900 pt-4">
-            <p className="font-bold text-blue-900 text-[11px] uppercase mb-1">Agence Nationale de la Météorologie (MALI MÉTÉO)</p>
-            <p className="text-[10px] text-slate-500">
-              
-            </p>
-            <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full">
-              
+            <p className="font-bold text-blue-900 text-[11px] uppercase mb-1">
+              Agence Nationale de la Météorologie (MALI MÉTÉO)
             </p>
           </footer>
 
