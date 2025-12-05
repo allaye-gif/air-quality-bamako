@@ -57,69 +57,62 @@ export function Bulletin({ data, onReset }: BulletinProps) {
       <style>{`
         @media print {
           @page { 
-            size: A4; 
+            size: A4 portrait; 
             margin: 0; 
           }
           
-          html, body { 
-            width: 210mm;
-            height: 297mm;
-            margin: 0 !important;
-            padding: 0 !important;
+          body { 
+            margin: 0;
+            padding: 0;
             background: white;
-            overflow: hidden !important;
           }
 
-          /* Cache tout le contenu inutile */
-          body * {
-            visibility: hidden;
+          /* Hide non-printable elements */
+          .no-print { display: none !important; }
+          
+          /* Main container reset for print */
+          #root, .min-h-screen {
+            margin: 0;
+            padding: 0;
+            background: white;
+            height: auto;
+            min-height: 0;
+            display: block;
           }
 
-          /* Affiche uniquement le bulletin */
-          #bulletin-content, #bulletin-content * {
-            visibility: visible;
-          }
-
+          /* The bulletin sheet itself */
           #bulletin-content {
+            margin: 0 !important;
+            padding: 10mm !important;
+            width: 210mm !important;
+            min-height: 297mm !important;
+            box-shadow: none !important;
+            border: none !important;
             position: absolute;
             top: 0;
             left: 0;
-            width: 210mm;
-            height: 297mm;
-            
-            /* Marges et Padding ajustés pour éviter la coupure */
-            padding: 15mm !important; 
-            margin: 0 !important;
-            
             background: white;
-            z-index: 9999;
-            
-            /* LE SECRET FINAL : Un léger zoom arrière pour garantir que ça rentre dans les marges imprimante */
-            transform: scale(0.95); 
-            transform-origin: top left;
-            
-            /* Permet au contenu de s'adapter */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            overflow: visible;
           }
-          
-          /* Force les couleurs */
+
+          /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           
-          .no-print {
-            display: none !important;
+          /* Prevent breaks inside key elements */
+          section, table, .grid {
+            page-break-inside: avoid;
           }
         }
 
-        /* Styles Web */
+        /* Web view styles */
         @media screen {
           #bulletin-content {
+            /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
-            min-height: 297mm;
+            min-height: 296mm;
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
