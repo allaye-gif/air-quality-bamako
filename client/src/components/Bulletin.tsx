@@ -61,10 +61,13 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             margin: 0; 
           }
           
-          body { 
+          html, body { 
             margin: 0;
             padding: 0;
             background: white;
+            height: 297mm;
+            width: 210mm;
+            overflow: hidden; /* Coupe tout ce qui dépasse (la page blanche) */
           }
 
           /* Hide non-printable elements */
@@ -75,9 +78,10 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             margin: 0;
             padding: 0;
             background: white;
-            height: auto;
+            height: 100%;
             min-height: 0;
             display: block;
+            overflow: hidden;
           }
 
           /* The bulletin sheet itself */
@@ -85,14 +89,15 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             margin: 0 !important;
             padding: 10mm !important;
             width: 210mm !important;
-            min-height: 297mm !important;
+            height: 296mm !important; /* 296mm pour la sécurité anti-débordement */
+            min-height: 0 !important;
             box-shadow: none !important;
             border: none !important;
             position: absolute;
             top: 0;
             left: 0;
             background: white;
-            overflow: visible;
+            overflow: hidden;
           }
 
           /* Print specific adjustments */
@@ -112,7 +117,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           #bulletin-content {
             /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
-            min-height: 296mm;
+            min-height: 297mm;
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
