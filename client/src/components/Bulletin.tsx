@@ -193,11 +193,11 @@ export function Bulletin({ data, onReset }: BulletinProps) {
                 </div>
               </div>
               <div className="w-2/3 p-8 flex flex-col justify-center">
-                <h3 className="font-bold text-blue-900 uppercase mb-3 text-sm flex items-center gap-2">
+                <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm flex items-center gap-2 tracking-wide">
                   <Activity className="w-5 h-5" />
                   Synthèse de la journée
                 </h3>
-                <p className="text-sm text-slate-700 text-justify leading-relaxed font-medium">
+                <p className="text-sm text-slate-700 text-justify leading-loose font-medium">
                   L'indice de qualité de l'air (AQI) atteint un maximum de <strong className="text-blue-900 text-lg">{data.cityMaxAQI}</strong> aujourd'hui. 
                   La qualité de l'air est qualifiée de <strong style={{ color: getStatusColor(data.cityMaxAQI) }}>{getAQILabel(data.cityMaxAQI).toLowerCase()}</strong>.
                   <br/><br/>
@@ -209,7 +209,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
           {/* DATA TABLE */}
           <section className="mb-8 flex-grow">
-            <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm border-b border-slate-200 pb-2 flex items-center gap-2">
+            <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm border-b border-slate-200 pb-2 flex items-center gap-2 tracking-wide">
               <Wind className="w-4 h-4" />
               Détails du Réseau de Surveillance (Concentrations Max)
             </h3>
@@ -217,32 +217,32 @@ export function Bulletin({ data, onReset }: BulletinProps) {
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-800 text-white">
-                    <th className="p-3 text-left font-medium w-[25%]">Station</th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">NO2<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">SO2<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">CO<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">O3<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">PM2.5<br/><span className="opacity-60 text-[9px]">µg/m³</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">PM10<br/><span className="opacity-60 text-[9px]">µg/m³</span></th>
-                    <th className="p-3 text-center font-bold border-l border-slate-700 bg-blue-900 w-[15%]">AQI</th>
+                    <th className="py-4 px-3 text-left font-medium w-[25%] tracking-wide">Station</th>
+                    <th className="py-4 px-3 text-center font-medium border-l border-slate-700 w-[10%]">NO2<br/><span className="opacity-60 text-[9px] font-normal">ppb</span></th>
+                    <th className="py-4 px-3 text-center font-medium border-l border-slate-700 w-[10%]">SO2<br/><span className="opacity-60 text-[9px] font-normal">ppb</span></th>
+                    <th className="py-4 px-3 text-center font-medium border-l border-slate-700 w-[10%]">CO<br/><span className="opacity-60 text-[9px] font-normal">ppb</span></th>
+                    <th className="py-4 px-3 text-center font-medium border-l border-slate-700 w-[10%]">O3<br/><span className="opacity-60 text-[9px] font-normal">ppb</span></th>
+                    <th className="py-4 px-3 text-center font-medium border-l border-slate-700 w-[10%]">PM2.5<br/><span className="opacity-60 text-[9px] font-normal">µg/m³</span></th>
+                    <th className="py-4 px-3 text-center font-medium border-l border-slate-700 w-[10%]">PM10<br/><span className="opacity-60 text-[9px] font-normal">µg/m³</span></th>
+                    <th className="py-4 px-3 text-center font-bold border-l border-slate-700 bg-blue-900 w-[15%] tracking-wider">AQI</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.stations.map((s, i) => (
-                    <tr key={i} className="text-slate-700 odd:bg-white even:bg-slate-50 border-b border-slate-100 last:border-0 hover:bg-blue-50">
-                      <td className="p-3 font-bold text-slate-800 truncate" title={s.name}>
+                    <tr key={i} className="text-slate-700 odd:bg-white even:bg-slate-50 border-b border-slate-100 last:border-0 hover:bg-blue-50 transition-colors">
+                      <td className="py-4 px-3 font-bold text-slate-800 truncate tracking-wide" title={s.name}>
                         {s.name.replace('ML_', '').replace(/_/g, ' ').replace('Qualité Air', '').replace('QA', '')}
                       </td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxNO2.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxSO2.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxCO.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxO3.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxPM25.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxPM10.toFixed(0)}</td>
-                      <td className="p-3 text-center font-bold border-l border-slate-200 bg-blue-50/30">
+                      <td className="py-4 px-3 text-center border-l border-slate-200 font-medium">{s.maxNO2.toFixed(0)}</td>
+                      <td className="py-4 px-3 text-center border-l border-slate-200 font-medium">{s.maxSO2.toFixed(0)}</td>
+                      <td className="py-4 px-3 text-center border-l border-slate-200 font-medium">{s.maxCO.toFixed(0)}</td>
+                      <td className="py-4 px-3 text-center border-l border-slate-200 font-medium">{s.maxO3.toFixed(0)}</td>
+                      <td className="py-4 px-3 text-center border-l border-slate-200 font-medium">{s.maxPM25.toFixed(0)}</td>
+                      <td className="py-4 px-3 text-center border-l border-slate-200 font-medium">{s.maxPM10.toFixed(0)}</td>
+                      <td className="py-4 px-3 text-center font-bold border-l border-slate-200 bg-blue-50/30">
                         <div className="flex items-center justify-center gap-2">
-                           <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: getStatusColor(s.aqi) }} />
-                           {s.aqi}
+                           <span className="w-3 h-3 rounded-full shadow-sm ring-2 ring-white" style={{ backgroundColor: getStatusColor(s.aqi) }} />
+                           <span className="text-sm">{s.aqi}</span>
                         </div>
                       </td>
                     </tr>
@@ -253,36 +253,36 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           </section>
 
           {/* ECO GESTE */}
-          <section className="mb-8 grid grid-cols-3 gap-4">
-             <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
+          <section className="mb-8 grid grid-cols-3 gap-6">
+             <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-5 flex items-start gap-5 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0 mt-1">
                    <Leaf className="w-6 h-6" />
                 </div>
                 <div>
-                   <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
-                   <p className="text-xs text-emerald-800 leading-snug">
+                   <h3 className="font-bold text-emerald-900 text-sm uppercase mb-2 tracking-wide">Le Geste Eco-Citoyen</h3>
+                   <p className="text-sm text-emerald-800 leading-relaxed">
                       Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
                    </p>
                 </div>
              </div>
-             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
-                <div className="flex gap-2 mb-2 text-blue-400">
-                   <Bike className="w-5 h-5" />
-                   <Car className="w-5 h-5 opacity-50" />
+             <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 flex flex-col justify-center items-center text-center shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex gap-3 mb-3 text-blue-500">
+                   <Bike className="w-6 h-6" />
+                   <Car className="w-6 h-6 opacity-40" />
                 </div>
-                <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
+                <div className="text-xs font-bold text-blue-800 uppercase tracking-widest">Mobilité Douce</div>
              </div>
           </section>
 
           {/* LEGEND & ADVICE GRID */}
-          <div className="grid grid-cols-2 gap-8 mb-4">
+          <div className="grid grid-cols-2 gap-8 mb-8">
              {/* Legend */}
-             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                <h3 className="font-bold text-slate-700 uppercase mb-3 text-[11px] flex items-center gap-2 border-b pb-2">
+             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <h3 className="font-bold text-slate-700 uppercase mb-4 text-xs flex items-center gap-2 border-b pb-3 tracking-wide">
                   <Info className="w-4 h-4" />
                   Légende AQI (Indice de Qualité)
                 </h3>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   {[
                     { l: 'Bonne (0-50)', c: COLORS.good },
                     { l: 'Modérée (51-100)', c: COLORS.moderate },
@@ -291,32 +291,32 @@ export function Bulletin({ data, onReset }: BulletinProps) {
                     { l: 'Très Mauv. (201-300)', c: COLORS.veryUnhealthy },
                     { l: 'Danger (300+)', c: COLORS.hazardous },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} />
-                      <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span>
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full shadow-sm ring-1 ring-slate-200 flex-shrink-0" style={{ backgroundColor: item.c }} />
+                      <span className="text-xs text-slate-600 font-medium whitespace-nowrap tracking-wide">{item.l}</span>
                     </div>
                   ))}
                 </div>
              </div>
 
              {/* Advice */}
-             <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
-                <h3 className="font-bold text-orange-900 uppercase mb-3 text-[11px] flex items-center gap-2 border-b border-orange-200 pb-2">
+             <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-6 shadow-sm">
+                <h3 className="font-bold text-orange-900 uppercase mb-4 text-xs flex items-center gap-2 border-b border-orange-200 pb-3 tracking-wide">
                   <ThermometerSun className="w-4 h-4" />
                   Recommandations
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
+                    <span className="text-xs font-bold uppercase text-orange-800 block mb-2 flex items-center gap-2 tracking-wide">
                       <Activity className="w-3 h-3" /> Population Générale
                     </span>
-                    <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.general}</p>
+                    <p className="text-xs text-slate-700 leading-loose pl-4 border-l-2 border-orange-200">{advice.general}</p>
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
+                    <span className="text-xs font-bold uppercase text-orange-800 block mb-2 flex items-center gap-2 tracking-wide">
                       <AlertTriangle className="w-3 h-3" /> Personnes Vulnérables
                     </span>
-                    <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
+                    <p className="text-xs text-slate-700 leading-loose pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
                   </div>
                 </div>
              </div>
