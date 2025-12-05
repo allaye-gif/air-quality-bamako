@@ -66,55 +66,56 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             height: 297mm;
             margin: 0 !important;
             padding: 0 !important;
-            overflow: hidden !important;
             background: white;
+            overflow: hidden !important;
           }
 
-          /* Cache tout le contenu par défaut avec visibility (garde la mise en page mais cache visuellement) */
+          /* Cache tout le contenu inutile */
           body * {
             visibility: hidden;
           }
 
-          /* Rends visible UNIQUEMENT le bulletin et son contenu */
+          /* Affiche uniquement le bulletin */
           #bulletin-content, #bulletin-content * {
             visibility: visible;
           }
 
-          /* Positionne le bulletin en fixe par dessus tout le reste */
           #bulletin-content {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 210mm;
             height: 297mm;
+            
+            /* Marges et Padding ajustés pour éviter la coupure */
+            padding: 15mm !important; 
             margin: 0 !important;
-            padding: 10mm !important;
+            
             background: white;
             z-index: 9999;
-            overflow: hidden !important; /* Coupe tout dépassement */
-            box-sizing: border-box;
-            border: none !important;
-            box-shadow: none !important;
+            
+            /* LE SECRET FINAL : Un léger zoom arrière pour garantir que ça rentre dans les marges imprimante */
+            transform: scale(0.95); 
+            transform-origin: top left;
+            
+            /* Permet au contenu de s'adapter */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
           }
           
-          /* Force l'impression des couleurs de fond */
+          /* Force les couleurs */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-
-          /* Empêche les sauts de page dans les éléments */
-          section, table, .grid, tr, td {
-            page-break-inside: avoid;
-          }
           
-          /* Cache les éléments non imprimables spécifiquement */
           .no-print {
             display: none !important;
           }
         }
 
-        /* Styles pour l'écran (inchangés) */
+        /* Styles Web */
         @media screen {
           #bulletin-content {
             width: 210mm;
