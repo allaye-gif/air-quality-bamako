@@ -56,12 +56,13 @@ export function Bulletin({ data, onReset }: BulletinProps) {
       <style>{`
         @media print {
           @page { 
+            /* Demande au navigateur d'ignorer les marges internes de la page */
             size: A4 portrait; 
             margin: 0 !important;
           }
           
           body { 
-            margin: 0 !important; /* Ajout d'un !important ici */
+            margin: 0 !important;
             padding: 0 !important;
             background: white !important;
           }
@@ -69,11 +70,10 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           /* Hide non-printable elements */
           .no-print { display: none !important; }
           
-          /* Main container reset for print */
-          #root, .min-h-screen {
+          /* Annule les paddings et marges externes du corps de la page */
+          #root, .min-h-screen, .min-h-screen.p-8 {
             margin: 0 !important;
             padding: 0 !important;
-            background: white !important;
             height: auto !important;
             min-height: 0 !important;
             display: block !important;
@@ -86,32 +86,27 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             border: none !important;
             border-radius: 0 !important;
           }
-          
-          /* Annule le padding extérieur du corps de page */
-          .min-h-screen.p-8 {
-             padding: 0 !important;
-          }
 
-
-          /* The bulletin sheet itself (AJUSTEMENTS FINAUX ICI) */
+          /* The bulletin sheet itself (AJUSTEMENTS MAJEURS POUR LA HAUTEUR ET LA LARGEUR) */
           #bulletin-content {
-            margin: 0 !important;
-            /* Padding vertical réduit à 7mm pour une sécurité maximale */
-            padding: 7mm 15mm !important; 
-            width: 210mm !important;
+            margin: 0 auto !important; /* CENTRAGE DU CONTENU IMPRIMÉ */
+            /* Padding vertical très réduit, padding horizontal encore réduit */
+            padding: 7mm 10mm !important; 
+            /* Largeur réduite à 205mm (au lieu de 210mm) pour une marge de sécurité */
+            width: 205mm !important; 
             /* Hauteur minimale très réduite */
             min-height: 275mm !important; 
-            max-height: 297mm !important; /* S'assurer de ne pas dépasser la taille max A4 */
+            max-height: 297mm !important; 
             box-shadow: none !important;
             border: none !important;
-            position: relative !important; /* Assurez-vous que la position n'interfère pas */
+            position: relative !important; 
             top: 0 !important;
             left: 0 !important;
             background: white !important;
-            overflow: hidden !important; /* Cache tout ce qui déborde */
+            overflow: hidden !important; 
             page-break-after: avoid !important; 
           }
-
+          
           /* Force une réduction du padding du footer */
           footer {
               padding-top: 5mm !important;
@@ -119,13 +114,13 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
           /* Réduire l'espace vertical entre les sections */
           section {
-            margin-bottom: 20px !important; /* Remplacer mb-8 par un pixel value plus petit */
+            margin-bottom: 20px !important; 
           }
           .grid.gap-8.mb-4 {
             margin-bottom: 10px !important;
-            gap: 1rem !important; /* Réduire les espaces entre les éléments de la grille si possible */
+            gap: 1rem !important; 
           }
-
+          
           /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
