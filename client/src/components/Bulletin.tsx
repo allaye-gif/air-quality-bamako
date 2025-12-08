@@ -1,9 +1,8 @@
+
+
 import { useRef } from 'react';
 import { DailySummary, getAQILabel, getHealthAdvice } from '@/lib/air-quality';
-import { 
-  Printer, Activity, AlertTriangle, Info, ThermometerSun, 
-  Wind, Leaf, Bike, Car 
-} from 'lucide-react';
+import { Printer, Activity, AlertTriangle, Info, ThermometerSun, Wind, Leaf, Bike, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoMaliMeteo from '@assets/Logo_Mali_Meteo.png';
 
@@ -13,7 +12,7 @@ interface BulletinProps {
 }
 
 const COLORS = {
-  good: '#4ade80',      
+  good: '#4ade80',     
   moderate: '#facc15', 
   unhealthySens: '#fb923c', 
   unhealthy: '#f87171', 
@@ -21,10 +20,6 @@ const COLORS = {
   hazardous: '#be123c', 
 };
 
-/**
- * Determines the color associated with an AQI value.
- * Used for dynamic styling of UI elements.
- */
 const getStatusColor = (aqi: number) => {
   if (aqi <= 50) return COLORS.good;
   if (aqi <= 100) return COLORS.moderate;
@@ -37,353 +32,343 @@ const getStatusColor = (aqi: number) => {
 export function Bulletin({ data, onReset }: BulletinProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  /**
-   * Handles the print workflow.
-   * 1. Swaps the document title for a file-safe filename.
-   * 2. Triggers the browser print dialog via a timeout loop to allow DOM updates.
-   * 3. Restores the original title after printing initiates.
-   */
+  // ✅ Validation des données
+  if (!data || !data.date) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-100">
+        <div className="text-red-500 text-lg font-semibold">
+          ⚠️ Données invalides ou manquantes
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Fonction d'impression améliorée
   const handlePrint = () => {
     const originalTitle = document.title;
-    // Sanitization: Replace filesystem-unsafe characters with hyphens
     const safeDate = data.date.replace(/[\/\\:*?"<>|]/g, '-');
-    const filename = `Bulletin_Qualite_Air_Bamako_${safeDate}`;
+    const filename = `Bulletin Qualité de l'air du ${safeDate}`;
     
     document.title = filename;
 
-    // Use nested timeouts to ensure the browser's main thread has repainted 
-    // the title change before the print dialog freezes execution.
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       window.print();
       
-      // Restore title after a delay to ensure the print spooler has captured the filename
       setTimeout(() => {
         document.title = originalTitle;
-      }, 500);
-    }, 500);
+      }, 100);
+    });
   };
 
   const advice = getHealthAdvice(data.cityMaxAQI);
 
   return (
-    <div className="flex flex-col items-center bg-slate-100 min-h-screen p-8">
-      {/* 
-        INJECTED PRINT STYLESHEET 
-        This style block is the core of the solution. It redefines the page physics 
-        specifically for the print media context.
-      */}
+    <div className="flex flex-col items-center bg-slate-100 min-h-screen p-4 md:p-8">
+      {/* ✅ Styles d'impression complets */}
       <style>{`
         @media print {
-          /* 
-             GLOBAL RESET LAYER
-             Forces the root document to abandon screen-based heights (100vh).
-             This prevents the browser from trying to print a "scrollable" view.
-          */
-          html, body {
-            height: auto!important;
-            min-height: 0!important;
-            margin: 0!important;
-            padding: 0!important;
-            overflow: hidden!important; /* Clips stray pixels */
-            background: white!important;
-          }
-
-          /* 
-             ABSOLUTE ISOLATION LAYER - "VISIBILITY TECHNIQUE"
-             1. Hide EVERYTHING in the body.
-             2. Make ONLY the bulletin content visible.
-             3. Position the bulletin at (0,0) absolutely.
-             
-             This detaches the bulletin from the React app's layout flow (wrappers, navs),
-             ensuring no external padding or margins affect the print position.
-          */
-          body * {
-            visibility: hidden;
-          }
-
-          #bulletin-content, #bulletin-content * {
-            visibility: visible;
-          }
-
-          /* 
-             PAGE GEOMETRY
-             Defines the target paper size.
-             Note: margins are set to 0. Padding is handled inside the container.
-          */
           @page { 
             size: A4 portrait; 
             margin: 0; 
           }
           
-          /* Utility to hide interface elements like buttons */
-         .no-print { 
-            display: none!important; 
+          body {
+            margin: 0;
+            padding: 0;
+            background: white;
           }
           
-          /* 
-             MAIN CONTAINER CONFIGURATION
-             - Position: Absolute (to overlay the hidden page).
-             - Dimensions: 210mm width (A4 standard).
-             - Height: 296.5mm (THE SAFETY MARGIN FIX).
-               We reduce the height by 0.5mm to prevent sub-pixel rounding errors 
-               from triggering a second page.
-          */
-          #bulletin-content {
-            position: absolute!important;
-            top: 0!important;
-            left: 0!important;
-            margin: 0!important;
-            
-            width: 210mm!important;
-            /* 
-               CRITICAL FIX: 296.5mm instead of 297mm.
-               This accounts for floating point rounding in Blink/Webkit engines.
-            */
-            min-height: 296.5mm!important; 
-            max-height: 297mm!important;
-            padding: 10mm!important;
-            
-            background: white!important;
-            box-shadow: none!important;
-            border: none!important;
-            overflow: hidden!important; /* Internal clip */
-            
-            /* Forces background colors to print (essential for AQI indicators) */
-            -webkit-print-color-adjust: exact!important;
-            print-color-adjust: exact!important;
-            
-            /* Ensure padding is included in the width calculation */
-            box-sizing: border-box!important;
+          .no-print {
+            display: none !important;
           }
-
-          /* 
-             FRAGMENTATION PROTECTION
-             Prevents tables and grids from being sliced awkwardly if content expands.
-          */
-          section, table,.grid, tr,.box-break-avoid {
+          
+          .print-container {
+            background: white;
+            padding: 20px;
+            box-shadow: none;
+            page-break-after: avoid;
+          }
+          
+          .print-section {
             page-break-inside: avoid;
-            break-inside: avoid;
+            margin-bottom: 20px;
+          }
+          
+          .print-table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          
+          .print-table th,
+          .print-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+          }
+          
+          .print-table th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+          }
+          
+          .aqi-indicator {
+            page-break-inside: avoid;
+          }
+          
+          .recommendations {
+            page-break-inside: avoid;
           }
         }
-
-        /* SCREEN STYLES (PREVIEW MODE) */
-        @media screen {
-          #bulletin-content {
-            width: 210mm;
-            min-height: 297mm; /* Full visual height on screen */
-            background: white;
-            margin: 0 auto;
-            box-sizing: border-box;
+        
+        @media (max-width: 768px) {
+          .grid-responsive {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
-      
-      {/* CONTROL BAR - Hidden during print */}
-      <div className="flex gap-4 mb-8 sticky top-4 z-50 bg-white/90 backdrop-blur p-3 rounded-full shadow-lg border no-print">
-        <Button variant="outline" onClick={onReset} className="rounded-full">
-          Nouveau
-        </Button>
-        <Button onClick={handlePrint} className="bg-blue-900 hover:bg-blue-800 text-white rounded-full gap-2">
+
+      {/* ✅ Boutons d'action (masqués à l'impression) */}
+      <div className="no-print w-full max-w-4xl mb-6 flex gap-3 justify-end">
+        <Button 
+          onClick={handlePrint}
+          variant="default"
+          className="flex items-center gap-2"
+          aria-label="Imprimer le bulletin"
+        >
           <Printer className="w-4 h-4" />
-          Imprimer / Enregistrer PDF
+          Imprimer le bulletin
+        </Button>
+        
+        <Button 
+          onClick={onReset}
+          variant="outline"
+          aria-label="Réinitialiser"
+        >
+          Réinitialiser
         </Button>
       </div>
 
-      {/* DOCUMENT PREVIEW CONTAINER */}
-      {/* The 'no-print-wrapper' isn't strictly needed due to visibility trick, 
-          but good for semantic clarity */}
-      <div className="shadow-2xl mb-20 bg-white rounded-lg overflow-hidden">
-        <div 
-          ref={contentRef}
-          id="bulletin-content"
-          className="relative text-slate-800 flex flex-col box-border"
-        >
-          {/* HEADER SECTION */}
-          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-4 mb-6">
-            <div className="w-1/4 flex flex-col items-center justify-center">
-               <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100 shadow-sm relative z-20">
-                 {/* Optimization: Ensure logo is high-res for print (at least 300px x 300px source) */}
-                 <img 
-                   src={logoMaliMeteo} 
-                   alt="Logo MALI METEO" 
-                   className="w-full h-full object-cover scale-110" 
-                 />
-               </div>
+      {/* ✅ Contenu principal du bulletin */}
+      <div 
+        ref={contentRef}
+        className="print-container w-full max-w-4xl bg-white rounded-lg shadow-lg p-8"
+        role="main"
+        aria-label="Bulletin de qualité de l'air"
+      >
+        {/* En-tête */}
+        <div className="print-section border-b-2 border-blue-900 pb-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <img 
+              src={logoMaliMeteo} 
+              alt="Logo Mali Météo" 
+              className="h-12"
+            />
+            <div className="text-right">
+              <p className="text-sm text-gray-600">MALI MÉTÉO</p>
+              <p className="text-xs text-gray-500">Un Peuple - Un But - Une Foi</p>
             </div>
-            
-            <div className="w-2/4 text-center pt-2 relative z-20 bg-white">
-              <h2 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-1">République du Mali</h2>
-              <h3 className="text-[10px] italic text-slate-400 mb-2">Un Peuple - Un But - Une Foi</h3>
-              <h1 className="text-3xl font-bold text-blue-900 uppercase font-serif leading-tight mb-2 bg-white">
-                Bulletin<br/>Qualité de l'Air
-              </h1>
-              <div className="text-xs font-bold text-blue-600 uppercase tracking-wide px-4 py-0.5 bg-blue-50 rounded-full inline-block border border-blue-100 relative z-20">
-                Zone de Bamako
-              </div>
+          </div>
+          
+          <h1 className="text-center text-2xl font-bold text-blue-900 mb-2">
+            BULLETIN
+          </h1>
+          <h2 className="text-center text-xl font-bold text-blue-900 mb-4">
+            QUALITÉ DE L'AIR
+          </h2>
+          
+          <p className="text-center text-sm font-semibold text-blue-600 mb-2">
+            {data.zone || 'ZONE DE BAMAKO'}
+          </p>
+          
+          <div className="flex justify-between items-center text-xs text-gray-600">
+            <span>Date: {data.date}</span>
+            <span>Validité: 24h</span>
+          </div>
+        </div>
+
+        {/* Indice Global */}
+        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="aqi-indicator flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg">
+            <p className="text-sm font-semibold text-gray-700 mb-3">INDICE GLOBAL</p>
+            <div 
+              className="w-32 h-32 rounded-full flex items-center justify-center text-white font-bold text-3xl shadow-md"
+              style={{ backgroundColor: getStatusColor(data.cityMaxAQI) }}
+              role="img"
+              aria-label={`Indice AQI: ${data.cityMaxAQI}`}
+            >
+              {data.cityMaxAQI}
             </div>
-
-            <div className="w-1/4 text-right pt-4 relative z-20 bg-white">
-              <div className="text-[10px] uppercase text-slate-400 mb-1 font-medium">Date du relevé</div>
-              <div className="font-bold text-xl text-blue-900 border-l-4 border-blue-900 pl-3">
-                {data.date}
-              </div>
-              <div className="text-[10px] text-slate-500 mt-1 font-medium flex justify-end items-center gap-1">
-                <Activity className="w-3 h-3 text-green-500" /> Validité: 24h
-              </div>
-            </div>
-          </header>
-
-          {/* SUMMARY SECTION */}
-          <section className="mb-8 box-break-avoid">
-            <div className="flex items-stretch bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-              <div className="w-1/3 p-6 flex flex-col items-center justify-center border-r border-slate-100">
-                <div className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Indice Global</div>
-                <div className="relative">
-                  <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold text-white shadow-lg mb-3 relative z-10 border-4 border-white"
-                    style={{ backgroundColor: getStatusColor(data.cityMaxAQI) }}
-                  >
-                    {data.cityMaxAQI}
-                  </div>
-                </div>
-                <div className="font-bold text-lg uppercase tracking-tight" style={{ color: getStatusColor(data.cityMaxAQI) }}>
-                  {getAQILabel(data.cityMaxAQI)}
-                </div>
-              </div>
-              <div className="w-2/3 p-8 flex flex-col justify-center">
-                <h3 className="font-bold text-blue-900 uppercase mb-3 text-sm flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
-                  Synthèse de la journée
-                </h3>
-                <p className="text-sm text-slate-700 text-justify leading-relaxed font-medium">
-                  L'indice de qualité de l'air (AQI) atteint un maximum de <strong className="text-blue-900 text-lg">{data.cityMaxAQI}</strong> aujourd'hui. 
-                  La qualité de l'air est qualifiée de <strong style={{ color: getStatusColor(data.cityMaxAQI) }}>{getAQILabel(data.cityMaxAQI).toLowerCase()}</strong>.
-                  <br/><br/>
-                  Le polluant majoritaire observé sur le réseau de surveillance est le <strong className="bg-slate-100 px-2 py-0.5 rounded text-slate-900">{data.stations.find(s => s.aqi === data.cityMaxAQI)?.mainPollutant}</strong>.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* DATA TABLE SECTION */}
-          <section className="mb-8 flex-grow box-break-avoid">
-            <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm border-b border-slate-200 pb-2 flex items-center gap-2">
-              <Wind className="w-4 h-4" />
-              Détails du Réseau de Surveillance (Concentrations Max)
-            </h3>
-            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-800 text-white">
-                    <th className="p-3 text-left font-medium w-[25%]">Station</th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">NO2<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">SO2<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">CO<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">O3<br/><span className="opacity-60 text-[9px]">ppb</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">PM2.5<br/><span className="opacity-60 text-[9px]">µg/m³</span></th>
-                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">PM10<br/><span className="opacity-60 text-[9px]">µg/m³</span></th>
-                    <th className="p-3 text-center font-bold border-l border-slate-700 bg-blue-900 w-[15%]">AQI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.stations.map((s, i) => (
-                    <tr key={i} className="text-slate-700 odd:bg-white even:bg-slate-50 border-b border-slate-100 last:border-0 hover:bg-blue-50">
-                      <td className="p-3 font-bold text-slate-800 truncate" title={s.name}>
-                        {s.name.replace('ML_', '').replace(/_/g, ' ').replace('Qualité Air', '').replace('QA', '')}
-                      </td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxNO2.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxSO2.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxCO.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxO3.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxPM25.toFixed(0)}</td>
-                      <td className="p-3 text-center border-l border-slate-200">{s.maxPM10.toFixed(0)}</td>
-                      <td className="p-3 text-center font-bold border-l border-slate-200 bg-blue-50/30">
-                        <div className="flex items-center justify-center gap-2">
-                           <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: getStatusColor(s.aqi) }} />
-                           {s.aqi}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          {/* ECO GESTE SECTION */}
-          <section className="mb-8 grid grid-cols-3 gap-4 box-break-avoid">
-             <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
-                   <Leaf className="w-6 h-6" />
-                </div>
-                <div>
-                   <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
-                   <p className="text-xs text-emerald-800 leading-snug">
-                     Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
-                   </p>
-                </div>
-             </div>
-             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
-                <div className="flex gap-2 mb-2 text-blue-400">
-                   <Bike className="w-5 h-5" />
-                   <Car className="w-5 h-5 opacity-50" />
-                </div>
-                <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
-             </div>
-          </section>
-
-          {/* LEGEND & ADVICE GRID */}
-          <div className="grid grid-cols-2 gap-8 mb-4 box-break-avoid">
-             {/* Legend */}
-             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                <h3 className="font-bold text-slate-700 uppercase mb-3 text-[11px] flex items-center gap-2 border-b pb-2">
-                  <Info className="w-4 h-4" />
-                  Légende AQI (Indice de Qualité)
-                </h3>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                  {.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} />
-                      <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span>
-                    </div>
-                  ))}
-                </div>
-             </div>
-
-             {/* Advice */}
-             <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
-                <h3 className="font-bold text-orange-900 uppercase mb-3 text-[11px] flex items-center gap-2 border-b border-orange-200 pb-2">
-                  <ThermometerSun className="w-4 h-4" />
-                  Recommandations
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
-                      <Activity className="w-3 h-3" /> Population Générale
-                    </span>
-                    <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.general}</p>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Personnes Vulnérables
-                    </span>
-                    <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
-                  </div>
-                </div>
-             </div>
+            <p className="text-sm font-bold text-gray-700 mt-3 uppercase">
+              {getAQILabel(data.cityMaxAQI)}
+            </p>
           </div>
 
-          {/* FOOTER */}
-          <footer className="mt-auto text-center border-t-2 border-blue-900 pt-4 box-break-avoid">
-            <p className="font-bold text-blue-900 text-[11px] uppercase mb-1">Agence Nationale de la Météorologie (MALI MÉTÉO)</p>
-            <p className="text-[10px] text-slate-500">
-               Direction Générale: Hamdallaye ACI 2000 - Bamako, Mali
+          {/* Synthèse de la journée */}
+          <div className="print-section p-6 bg-blue-50 rounded-lg">
+            <h3 className="text-sm font-bold text-blue-900 mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              SYNTHÈSE DE LA JOURNÉE
+            </h3>
+            <p className="text-sm text-gray-700 leading-relaxed mb-3">
+              L'indice de qualité de l'air (AQI) atteint un maximum de{' '}
+              <span className="font-bold">{data.cityMaxAQI}</span> aujourd'hui. 
+              La qualité de l'air est qualifiée de{' '}
+              <span className="font-bold uppercase">{getAQILabel(data.cityMaxAQI)}</span>.
             </p>
-            <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full">
-               Document généré automatiquement le {new Date().toLocaleDateString('fr-ML')} - Système de surveillance MALI-QA
+            <p className="text-sm text-gray-700">
+              Le polluant majoritaire observé sur le réseau de surveillance est le{' '}
+              <span className="font-bold">{data.mainPollutant || 'PM2.5'}</span>.
             </p>
-          </footer>
+          </div>
+        </div>
 
+        {/* Détail du réseau de surveillance */}
+        <div className="print-section mb-6">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            DÉTAIL DU RÉSEAU DE SURVEILLANCE (CONCENTRATIONS MAX)
+          </h3>
+          
+          <div className="overflow-x-auto">
+            <table className="print-table w-full text-xs">
+              <thead>
+                <tr className="bg-blue-900 text-white">
+                  <th className="p-2">Station</th>
+                  <th className="p-2">NO₂ (µg/m³)</th>
+                  <th className="p-2">SO₂ (µg/m³)</th>
+                  <th className="p-2">CO (µg/m³)</th>
+                  <th className="p-2">O₃ (µg/m³)</th>
+                  <th className="p-2">PM2.5 (µg/m³)</th>
+                  <th className="p-2">PM10 (µg/m³)</th>
+                  <th className="p-2">AQI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.stations && data.stations.length > 0 ? (
+                  data.stations.map((station, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="p-2 font-semibold">{station.name}</td>
+                      <td className="p-2">{station.no2 || '-'}</td>
+                      <td className="p-2">{station.so2 || '-'}</td>
+                      <td className="p-2">{station.co || '-'}</td>
+                      <td className="p-2">{station.o3 || '-'}</td>
+                      <td className="p-2">{station.pm25 || '-'}</td>
+                      <td className="p-2">{station.pm10 || '-'}</td>
+                      <td className="p-2">
+                        <span 
+                          className="inline-block w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                          style={{ backgroundColor: getStatusColor(station.aqi) }}
+                        >
+                          {station.aqi}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="p-4 text-center text-gray-500">
+                      Aucune donnée disponible
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Recommandations */}
+        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Geste Éco-Citoyen */}
+          <div className="recommendations p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+            <h4 className="text-sm font-bold text-green-900 mb-3 flex items-center gap-2">
+              <Leaf className="w-4 h-4" />
+              LE GESTE ÉCO-CITOYEN
+            </h4>
+            <ul className="text-xs text-gray-700 space-y-2">
+              <li className="flex gap-2">
+                <span>🚗</span>
+                <span>Privilégiez le covoiturage ou les transports en commun. Une voiture à moins = moins de pollution.</span>
+              </li>
+              <li className="flex gap-2">
+                <span>🚴</span>
+                <span>Utilisez le vélo ou la marche pour les courts trajets.</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Mobilité Douce */}
+          <div className="recommendations p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+            <h4 className="text-sm font-bold text-blue-900 mb-3 flex items-center gap-2">
+              <Bike className="w-4 h-4" />
+              MOBILITÉ DOUCE
+            </h4>
+            <p className="text-xs text-gray-700">
+              Encouragez les modes de transport non polluants pour réduire votre empreinte carbone.
+            </p>
+          </div>
+        </div>
+
+        {/* Légende et Recommandations de santé */}
+        <div className="print-section grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Légende AQI */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              LÉGENDE AQI (INDICE DE QUALITÉ)
+            </h4>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.good }}></div>
+                <span>Bonne (0-50)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.moderate }}></div>
+                <span>Modérée (51-100)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.unhealthySens }}></div>
+                <span>Malsaine (101-150)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.unhealthy }}></div>
+                <span>Très Malsaine (151-200)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.veryUnhealthy }}></div>
+                <span>Dangereuse (201-300)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.hazardous }}></div>
+                <span>Extrêmement Dangereuse (300+)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommandations de santé */}
+          <div className="recommendations p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+            <h4 className="text-sm font-bold text-yellow-900 mb-3 flex items-center gap-2">
+              <ThermometerSun className="w-4 h-4" />
+              RECOMMANDATIONS
+            </h4>
+            <div className="space-y-2 text-xs text-gray-700">
+              <div>
+                <p className="font-semibold text-yellow-900">👥 POPULATION GÉNÉRALE</p>
+                <p>{advice?.general || 'Aucune restriction particulière.'}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-yellow-900">⚠️ PERSONNES VULNÉRABLES</p>
+                <p>{advice?.vulnerable || 'Consultez un professionnel de santé si nécessaire.'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pied de page */}
+        <div className="print-section border-t-2 border-gray-300 pt-4 text-center text-xs text-gray-600">
+          <p className="font-semibold">AGENCE NATIONALE DE LA MÉTÉOROLOGIE (MALI MÉTÉO)</p>
+          <p className="text-gray-500 mt-1">
+            Ce bulletin est établi à titre informatif. Pour plus d'informations, consultez les autorités compétentes.
+          </p>
         </div>
       </div>
     </div>
