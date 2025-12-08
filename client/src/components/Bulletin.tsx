@@ -52,89 +52,90 @@ export function Bulletin({ data, onReset }: BulletinProps) {
     <div className="flex flex-col items-center bg-slate-100 min-h-screen p-8">
       <style>{`
         @media print {
-          @page { 
-            size: A4 portrait; 
-            margin: 0; 
+          @page {
+            size: A4 portrait;
+            margin: 0;
           }
-          
-          body { 
+
+          body {
             margin: 0;
             padding: 0;
             background: white;
-            overflow: hidden;
           }
 
-          /* Hide non-printable elements */
           .no-print { display: none !important; }
-          
-          /* Main container reset for print */
-          #root, .min-h-screen {
+
+          #root {
             margin: 0;
             padding: 0;
             background: white;
-            height: 297mm;
-            max-height: 297mm;
+            width: 100%;
+            height: auto;
             display: block;
-            overflow: hidden;
           }
 
-          /* The bulletin sheet itself */
+          .min-h-screen {
+            margin: 0;
+            padding: 0;
+            background: white !important;
+            min-height: auto;
+            display: block;
+          }
+
           #bulletin-content {
             margin: 0 !important;
-            padding: 8mm !important;
-            width: 210mm !important;
-            height: 297mm !important;
-            max-height: 297mm !important;
+            padding: 10mm !important;
+            width: 100%;
+            max-width: 210mm !important;
+            box-sizing: border-box;
             box-shadow: none !important;
             border: none !important;
-            position: relative;
             background: white;
-            overflow: hidden;
-            box-sizing: border-box;
+            page-break-after: avoid;
           }
 
-          /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          
-          /* Prevent breaks inside key elements */
-          section, table, .grid {
+
+          section {
+            page-break-inside: avoid;
+            margin-bottom: 3mm !important;
+          }
+
+          table {
             page-break-inside: avoid;
           }
 
-          /* Reduce spacing for print */
-          section {
-            margin-bottom: 5mm !important;
+          .grid {
+            page-break-inside: avoid;
           }
 
           header {
-            padding-bottom: 3mm !important;
-            margin-bottom: 4mm !important;
+            padding-bottom: 1mm !important;
+            margin-bottom: 2mm !important;
           }
 
           footer {
-            padding-top: 3mm !important;
+            padding-top: 1mm !important;
+            margin-top: auto !important;
           }
 
-          /* Force single page */
-          html, body {
-            height: 297mm !important;
-            max-height: 297mm !important;
-            overflow: hidden !important;
+          body {
+            font-size: 12px;
           }
         }
 
-        /* Web view styles */
         @media screen {
           #bulletin-content {
-            /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
             min-height: 296mm;
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
           }
         }
       `}</style>
