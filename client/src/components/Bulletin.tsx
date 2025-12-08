@@ -85,7 +85,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             margin: 0 !important;
             padding: 5mm !important;
             width: 210mm !important;
-            min-height: 295mm !important;
+            min-height: 299mm !important;
             box-shadow: none !important;
             border: none !important;
             position: absolute;
