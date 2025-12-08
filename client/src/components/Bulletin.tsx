@@ -32,14 +32,18 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
   const handlePrint = () => {
     const originalTitle = document.title;
+    // Remplacer les caractères interdits dans les noms de fichiers (comme /) par des tirets
     const safeDate = data.date.replace(/[\/\\:*?"<>|]/g, '-');
     const filename = `Bulletin Qualité de l'air du ${safeDate}`;
     
     document.title = filename;
 
+    // Petit délai pour laisser le temps au navigateur de prendre en compte le nouveau titre
     setTimeout(() => {
       window.print();
       
+      // Remettre le titre original après la fermeture de la fenêtre d'impression
+      // On ajoute un petit délai supplémentaire par sécurité
       setTimeout(() => {
         document.title = originalTitle;
       }, 500);
@@ -52,90 +56,66 @@ export function Bulletin({ data, onReset }: BulletinProps) {
     <div className="flex flex-col items-center bg-slate-100 min-h-screen p-8">
       <style>{`
         @media print {
-          @page {
-            size: A4 portrait;
-            margin: 0;
+          @page { 
+            size: A4 portrait; 
+            margin: 0; 
           }
-
-          body {
+          
+          body { 
             margin: 0;
             padding: 0;
             background: white;
           }
 
+          /* Hide non-printable elements */
           .no-print { display: none !important; }
-
-          #root {
+          
+          /* Main container reset for print */
+          #root, .min-h-screen {
             margin: 0;
             padding: 0;
             background: white;
-            width: 100%;
             height: auto;
+            min-height: 0;
             display: block;
           }
 
-          .min-h-screen {
-            margin: 0;
-            padding: 0;
-            background: white !important;
-            min-height: auto;
-            display: block;
-          }
-
+          /* The bulletin sheet itself */
           #bulletin-content {
             margin: 0 !important;
-            padding: 10mm !important;
-            width: 100%;
-            max-width: 210mm !important;
-            box-sizing: border-box;
+            padding: 5mm !important;
+            width: 210mm !important;
+            min-height: 297mm !important;
             box-shadow: none !important;
             border: none !important;
+            position: absolute;
+            top: 0;
+            left: 0;
             background: white;
-            page-break-after: avoid;
+            overflow: visible;
           }
 
+          /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-
-          section {
+          
+          /* Prevent breaks inside key elements */
+          section, table, .grid {
             page-break-inside: avoid;
-            margin-bottom: 3mm !important;
-          }
-
-          table {
-            page-break-inside: avoid;
-          }
-
-          .grid {
-            page-break-inside: avoid;
-          }
-
-          header {
-            padding-bottom: 1mm !important;
-            margin-bottom: 2mm !important;
-          }
-
-          footer {
-            padding-top: 1mm !important;
-            margin-top: auto !important;
-          }
-
-          body {
-            font-size: 12px;
           }
         }
 
+        /* Web view styles */
         @media screen {
           #bulletin-content {
+            /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
             min-height: 296mm;
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
           }
         }
       `}</style>
