@@ -57,7 +57,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         @media print {
           @page { 
             size: A4 portrait; 
-            margin: 0 !important; /* Ajouté: Assure que les marges de la page sont nulles */
+            margin: 0 !important;
           }
           
           body { 
@@ -79,14 +79,20 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             display: block;
           }
 
-          /* The bulletin sheet itself (MODIFICATIONS ICI) */
+          /* Annule la marge extérieure du conteneur parent (mb-20) et le shadow */
+          .shadow-2xl.mb-20 {
+            margin-bottom: 0 !important;
+            box-shadow: none !important;
+          }
+
+          /* The bulletin sheet itself (AJUSTEMENTS MAJEURS ICI) */
           #bulletin-content {
             margin: 0 !important;
-            /* Remplacement de 15mm par 10mm pour le padding vertical et 15mm horizontal */
-            padding: 10mm 15mm !important; 
+            /* Réduit le padding vertical à 8mm pour une marge de sécurité */
+            padding: 8mm 15mm !important; 
             width: 210mm !important;
-            /* Remplacement de 297mm par 287mm pour laisser une marge et éviter le débordement sur la 2ème page */
-            min-height: 287mm !important; 
+            /* Nouvelle hauteur minimale réduite pour la sécurité anti-débordement */
+            min-height: 280mm !important; 
             box-shadow: none !important;
             border: none !important;
             position: absolute;
@@ -94,8 +100,12 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             left: 0;
             background: white;
             overflow: visible;
-            /* Sécurité supplémentaire contre la rupture de page non désirée */
             page-break-after: avoid; 
+          }
+
+          /* Force une réduction du padding du footer pour gagner de l'espace */
+          footer {
+              padding-top: 5mm !important;
           }
 
           /* Print specific adjustments */
@@ -113,9 +123,9 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         /* Web view styles */
         @media screen {
           #bulletin-content {
-            /* Fixed A4 Aspect Ratio for Web Preview (inchangé) */
+            /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
-            min-height: 296mm;
+            min-height: 296mm; /* Garder 296mm ou 297mm en vue web pour la preview A4 */
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
