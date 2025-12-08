@@ -32,17 +32,14 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
   const handlePrint = () => {
     const originalTitle = document.title;
-    // Remplacer les caractères interdits dans les noms de fichiers (comme /) par des tirets
     const safeDate = data.date.replace(/[\/\\:*?"<>|]/g, '-');
     const filename = `Bulletin Qualité de l'air du ${safeDate}`;
     
     document.title = filename;
 
-    // Petit délai pour laisser le temps au navigateur de prendre en compte le nouveau titre
     setTimeout(() => {
       window.print();
       
-      // Remettre le titre original après la fermeture de la fenêtre d'impression
       setTimeout(() => {
         document.title = originalTitle;
       }, 500);
@@ -56,7 +53,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
       <style>{`
         @media print {
           @page { 
-            /* Demande au navigateur d'ignorer les marges internes de la page */
+            /* Règle impérative pour le navigateur */
             size: A4 portrait; 
             margin: 0 !important;
           }
@@ -87,15 +84,15 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             border-radius: 0 !important;
           }
 
-          /* The bulletin sheet itself (AJUSTEMENTS MAJEURS POUR LA HAUTEUR ET LA LARGEUR) */
+          /* The bulletin sheet itself (AJUSTEMENTS ULTIMES) */
           #bulletin-content {
-            margin: 0 auto !important; /* CENTRAGE DU CONTENU IMPRIMÉ */
-            /* Padding vertical très réduit, padding horizontal encore réduit */
+            margin: 0 auto !important; /* Centrage */
+            /* Padding vertical très réduit, padding horizontal ajusté */
             padding: 7mm 10mm !important; 
-            /* Largeur réduite à 205mm (au lieu de 210mm) pour une marge de sécurité */
+            /* Largeur réduite pour la sécurité, comme précédemment */
             width: 205mm !important; 
-            /* Hauteur minimale très réduite */
-            min-height: 275mm !important; 
+            /* Hauteur minimale extrêmement réduite pour éviter la 2e page */
+            min-height: 270mm !important; 
             max-height: 297mm !important; 
             box-shadow: none !important;
             border: none !important;
@@ -107,20 +104,17 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             page-break-after: avoid !important; 
           }
           
+          /* Remplacer toutes les marges tailwind par des valeurs absolues plus petites */
+          .mb-8 { margin-bottom: 18px !important; } 
+          .mb-6 { margin-bottom: 15px !important; }
+          .mb-4 { margin-bottom: 10px !important; }
+          .gap-8 { gap: 15px !important; }
+          
           /* Force une réduction du padding du footer */
           footer {
               padding-top: 5mm !important;
           }
 
-          /* Réduire l'espace vertical entre les sections */
-          section {
-            margin-bottom: 20px !important; 
-          }
-          .grid.gap-8.mb-4 {
-            margin-bottom: 10px !important;
-            gap: 1rem !important; 
-          }
-          
           /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
@@ -136,7 +130,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         /* Web view styles */
         @media screen {
           #bulletin-content {
-            /* Fixed A4 Aspect Ratio for Web Preview */
+            /* Garder la taille A4 pour la preview web */
             width: 210mm;
             min-height: 296mm; 
             background: white;
