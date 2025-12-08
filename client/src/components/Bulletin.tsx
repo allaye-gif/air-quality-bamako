@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 import { DailySummary, getAQILabel, getHealthAdvice } from '@/lib/air-quality';
-import { Printer, Activity, AlertTriangle, Info, ThermometerSun, Wind, Leaf, Bike, Car } from 'lucide-react';
+import { 
+  Printer, Activity, AlertTriangle, Info, ThermometerSun, 
+  Wind, Leaf, Bike, Car 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoMaliMeteo from '@assets/Logo_Mali_Meteo.png';
 
@@ -10,14 +13,18 @@ interface BulletinProps {
 }
 
 const COLORS = {
-  good: '#4ade80',      // Bonne (0-50)
-  moderate: '#facc15',  // Modérée (51-100)
-  unhealthySens: '#fb923c',  // Médiocre (101-150)
-  unhealthy: '#f87171',  // Mauvaise (151-200)
-  veryUnhealthy: '#a855f7',  // Très Mauv. (201-300)
-  hazardous: '#be123c',  // Danger (300+)
+  good: '#4ade80',      
+  moderate: '#facc15', 
+  unhealthySens: '#fb923c', 
+  unhealthy: '#f87171', 
+  veryUnhealthy: '#a855f7', 
+  hazardous: '#be123c', 
 };
 
+/**
+ * Determines the color associated with an AQI value.
+ * Used for dynamic styling of UI elements.
+ */
 const getStatusColor = (aqi: number) => {
   if (aqi <= 50) return COLORS.good;
   if (aqi <= 100) return COLORS.moderate;
@@ -30,16 +37,26 @@ const getStatusColor = (aqi: number) => {
 export function Bulletin({ data, onReset }: BulletinProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Handles the print workflow.
+   * 1. Swaps the document title for a file-safe filename.
+   * 2. Triggers the browser print dialog via a timeout loop to allow DOM updates.
+   * 3. Restores the original title after printing initiates.
+   */
   const handlePrint = () => {
     const originalTitle = document.title;
+    // Sanitization: Replace filesystem-unsafe characters with hyphens
     const safeDate = data.date.replace(/[\/\\:*?"<>|]/g, '-');
-    const filename = `Bulletin Qualité de l'air du ${safeDate}`;
+    const filename = `Bulletin_Qualite_Air_Bamako_${safeDate}`;
     
     document.title = filename;
 
+    // Use nested timeouts to ensure the browser's main thread has repainted 
+    // the title change before the print dialog freezes execution.
     setTimeout(() => {
       window.print();
       
+      // Restore title after a delay to ensure the print spooler has captured the filename
       setTimeout(() => {
         document.title = originalTitle;
       }, 500);
@@ -50,89 +67,110 @@ export function Bulletin({ data, onReset }: BulletinProps) {
 
   return (
     <div className="flex flex-col items-center bg-slate-100 min-h-screen p-8">
+      {/* 
+        INJECTED PRINT STYLESHEET 
+        This style block is the core of the solution. It redefines the page physics 
+        specifically for the print media context.
+      */}
       <style>{`
         @media print {
+          /* 
+             GLOBAL RESET LAYER
+             Forces the root document to abandon screen-based heights (100vh).
+             This prevents the browser from trying to print a "scrollable" view.
+          */
+          html, body {
+            height: auto!important;
+            min-height: 0!important;
+            margin: 0!important;
+            padding: 0!important;
+            overflow: hidden!important; /* Clips stray pixels */
+            background: white!important;
+          }
+
+          /* 
+             ABSOLUTE ISOLATION LAYER - "VISIBILITY TECHNIQUE"
+             1. Hide EVERYTHING in the body.
+             2. Make ONLY the bulletin content visible.
+             3. Position the bulletin at (0,0) absolutely.
+             
+             This detaches the bulletin from the React app's layout flow (wrappers, navs),
+             ensuring no external padding or margins affect the print position.
+          */
+          body * {
+            visibility: hidden;
+          }
+
+          #bulletin-content, #bulletin-content * {
+            visibility: visible;
+          }
+
+          /* 
+             PAGE GEOMETRY
+             Defines the target paper size.
+             Note: margins are set to 0. Padding is handled inside the container.
+          */
           @page { 
-            /* Règle impérative pour le navigateur */
             size: A4 portrait; 
-            margin: 0 !important;
+            margin: 0; 
           }
           
-          body { 
-            margin: 0 !important;
-            padding: 0 !important;
-            background: white !important;
+          /* Utility to hide interface elements like buttons */
+         .no-print { 
+            display: none!important; 
           }
-
-          /* Hide non-printable elements */
-          .no-print { display: none !important; }
           
-          /* Annule les paddings et marges externes du corps de la page */
-          #root, .min-h-screen, .min-h-screen.p-8 {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: auto !important;
-            min-height: 0 !important;
-            display: block !important;
-          }
-
-          /* Annule la marge extérieure du conteneur parent (mb-20) et le shadow */
-          .shadow-2xl.mb-20 {
-            margin-bottom: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-            border-radius: 0 !important;
-          }
-
-          /* The bulletin sheet itself (AJUSTEMENTS ULTIMES) */
+          /* 
+             MAIN CONTAINER CONFIGURATION
+             - Position: Absolute (to overlay the hidden page).
+             - Dimensions: 210mm width (A4 standard).
+             - Height: 296.5mm (THE SAFETY MARGIN FIX).
+               We reduce the height by 0.5mm to prevent sub-pixel rounding errors 
+               from triggering a second page.
+          */
           #bulletin-content {
-            margin: 0 auto !important; /* Centrage */
-            /* Padding vertical très réduit, padding horizontal ajusté */
-            padding: 7mm 10mm !important; 
-            /* Largeur réduite pour la sécurité, comme précédemment */
-            width: 205mm !important; 
-            /* Hauteur minimale extrêmement réduite pour éviter la 2e page */
-            min-height: 270mm !important; 
-            max-height: 297mm !important; 
-            box-shadow: none !important;
-            border: none !important;
-            position: relative !important; 
-            top: 0 !important;
-            left: 0 !important;
-            background: white !important;
-            overflow: hidden !important; 
-            page-break-after: avoid !important; 
-          }
-          
-          /* Remplacer toutes les marges tailwind par des valeurs absolues plus petites */
-          .mb-8 { margin-bottom: 18px !important; } 
-          .mb-6 { margin-bottom: 15px !important; }
-          .mb-4 { margin-bottom: 10px !important; }
-          .gap-8 { gap: 15px !important; }
-          
-          /* Force une réduction du padding du footer */
-          footer {
-              padding-top: 5mm !important;
+            position: absolute!important;
+            top: 0!important;
+            left: 0!important;
+            margin: 0!important;
+            
+            width: 210mm!important;
+            /* 
+               CRITICAL FIX: 296.5mm instead of 297mm.
+               This accounts for floating point rounding in Blink/Webkit engines.
+            */
+            min-height: 296.5mm!important; 
+            max-height: 297mm!important;
+            padding: 10mm!important;
+            
+            background: white!important;
+            box-shadow: none!important;
+            border: none!important;
+            overflow: hidden!important; /* Internal clip */
+            
+            /* Forces background colors to print (essential for AQI indicators) */
+            -webkit-print-color-adjust: exact!important;
+            print-color-adjust: exact!important;
+            
+            /* Ensure padding is included in the width calculation */
+            box-sizing: border-box!important;
           }
 
-          /* Print specific adjustments */
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          
-          /* Prevent breaks inside key elements */
-          section, table, .grid {
+          /* 
+             FRAGMENTATION PROTECTION
+             Prevents tables and grids from being sliced awkwardly if content expands.
+          */
+          section, table,.grid, tr,.box-break-avoid {
             page-break-inside: avoid;
+            break-inside: avoid;
           }
         }
 
-        /* Web view styles */
+        /* SCREEN STYLES (PREVIEW MODE) */
         @media screen {
           #bulletin-content {
-            /* Garder la taille A4 pour la preview web */
             width: 210mm;
-            min-height: 296mm; 
+            min-height: 297mm; /* Full visual height on screen */
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
@@ -140,6 +178,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         }
       `}</style>
       
+      {/* CONTROL BAR - Hidden during print */}
       <div className="flex gap-4 mb-8 sticky top-4 z-50 bg-white/90 backdrop-blur p-3 rounded-full shadow-lg border no-print">
         <Button variant="outline" onClick={onReset} className="rounded-full">
           Nouveau
@@ -150,16 +189,20 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         </Button>
       </div>
 
+      {/* DOCUMENT PREVIEW CONTAINER */}
+      {/* The 'no-print-wrapper' isn't strictly needed due to visibility trick, 
+          but good for semantic clarity */}
       <div className="shadow-2xl mb-20 bg-white rounded-lg overflow-hidden">
         <div 
           ref={contentRef}
           id="bulletin-content"
-          className="relative text-slate-800 flex flex-col p-[15mm] box-border"
+          className="relative text-slate-800 flex flex-col box-border"
         >
-          {/* HEADER */}
-          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-4 mb-6 before:content-none after:content-none">
+          {/* HEADER SECTION */}
+          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-4 mb-6">
             <div className="w-1/4 flex flex-col items-center justify-center">
                <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100 shadow-sm relative z-20">
+                 {/* Optimization: Ensure logo is high-res for print (at least 300px x 300px source) */}
                  <img 
                    src={logoMaliMeteo} 
                    alt="Logo MALI METEO" 
@@ -171,7 +214,9 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             <div className="w-2/4 text-center pt-2 relative z-20 bg-white">
               <h2 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-1">République du Mali</h2>
               <h3 className="text-[10px] italic text-slate-400 mb-2">Un Peuple - Un But - Une Foi</h3>
-              <h1 className="text-3xl font-bold text-blue-900 uppercase font-serif leading-tight mb-2 bg-white">Bulletin<br/>Qualité de l'Air</h1>
+              <h1 className="text-3xl font-bold text-blue-900 uppercase font-serif leading-tight mb-2 bg-white">
+                Bulletin<br/>Qualité de l'Air
+              </h1>
               <div className="text-xs font-bold text-blue-600 uppercase tracking-wide px-4 py-0.5 bg-blue-50 rounded-full inline-block border border-blue-100 relative z-20">
                 Zone de Bamako
               </div>
@@ -189,7 +234,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           </header>
 
           {/* SUMMARY SECTION */}
-          <section className="mb-8">
+          <section className="mb-8 box-break-avoid">
             <div className="flex items-stretch bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="w-1/3 p-6 flex flex-col items-center justify-center border-r border-slate-100">
                 <div className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Indice Global</div>
@@ -220,8 +265,8 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             </div>
           </section>
 
-          {/* DATA TABLE */}
-          <section className="mb-8 flex-grow">
+          {/* DATA TABLE SECTION */}
+          <section className="mb-8 flex-grow box-break-avoid">
             <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm border-b border-slate-200 pb-2 flex items-center gap-2">
               <Wind className="w-4 h-4" />
               Détails du Réseau de Surveillance (Concentrations Max)
@@ -265,55 +310,48 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             </div>
           </section>
 
-          {/* ECO GESTE */}
-          <section className="mb-8 grid grid-cols-3 gap-4">
+          {/* ECO GESTE SECTION */}
+          <section className="mb-8 grid grid-cols-3 gap-4 box-break-avoid">
              <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-               <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
-                  <Leaf className="w-6 h-6" />
-               </div>
-               <div>
-                  <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
-                  <p className="text-xs text-emerald-800 leading-snug">
-                    Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
-                  </p>
-               </div>
+                <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
+                   <Leaf className="w-6 h-6" />
+                </div>
+                <div>
+                   <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
+                   <p className="text-xs text-emerald-800 leading-snug">
+                     Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
+                   </p>
+                </div>
              </div>
              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
-               <div className="flex gap-2 mb-2 text-blue-400">
-                  <Bike className="w-5 h-5" />
-                  <Car className="w-5 h-5 opacity-50" />
-               </div>
-               <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
+                <div className="flex gap-2 mb-2 text-blue-400">
+                   <Bike className="w-5 h-5" />
+                   <Car className="w-5 h-5 opacity-50" />
+                </div>
+                <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
              </div>
           </section>
 
           {/* LEGEND & ADVICE GRID */}
-          <div className="grid grid-cols-2 gap-8 mb-4">
-              {/* Legend */}
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="grid grid-cols-2 gap-8 mb-4 box-break-avoid">
+             {/* Legend */}
+             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                 <h3 className="font-bold text-slate-700 uppercase mb-3 text-[11px] flex items-center gap-2 border-b pb-2">
                   <Info className="w-4 h-4" />
                   Légende AQI (Indice de Qualité)
                 </h3>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                  {[
-                    { l: 'Bonne (0-50)', c: COLORS.good },
-                    { l: 'Modérée (51-100)', c: COLORS.moderate },
-                    { l: 'Médiocre (101-150)', c: COLORS.unhealthySens },
-                    { l: 'Mauvaise (151-200)', c: COLORS.unhealthy },
-                    { l: 'Très Mauv. (201-300)', c: COLORS.veryUnhealthy },
-                    { l: 'Danger (300+)', c: COLORS.hazardous },
-                  ].map((item, idx) => (
+                  {.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} />
                       <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span>
                     </div>
                   ))}
                 </div>
-              </div>
+             </div>
 
-              {/* Advice */}
-              <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
+             {/* Advice */}
+             <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
                 <h3 className="font-bold text-orange-900 uppercase mb-3 text-[11px] flex items-center gap-2 border-b border-orange-200 pb-2">
                   <ThermometerSun className="w-4 h-4" />
                   Recommandations
@@ -332,17 +370,17 @@ export function Bulletin({ data, onReset }: BulletinProps) {
                     <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
                   </div>
                 </div>
-              </div>
+             </div>
           </div>
 
           {/* FOOTER */}
-          <footer className="mt-auto text-center border-t-2 border-blue-900 pt-4">
+          <footer className="mt-auto text-center border-t-2 border-blue-900 pt-4 box-break-avoid">
             <p className="font-bold text-blue-900 text-[11px] uppercase mb-1">Agence Nationale de la Météorologie (MALI MÉTÉO)</p>
             <p className="text-[10px] text-slate-500">
-              
+               Direction Générale: Hamdallaye ACI 2000 - Bamako, Mali
             </p>
             <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full">
-              
+               Document généré automatiquement le {new Date().toLocaleDateString('fr-ML')} - Système de surveillance MALI-QA
             </p>
           </footer>
 
