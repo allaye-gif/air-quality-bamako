@@ -1,4 +1,3 @@
-
 import { useRef } from 'react';
 import { DailySummary, getAQILabel, getHealthAdvice } from '@/lib/air-quality';
 import { Printer, Activity, AlertTriangle, Info, ThermometerSun, Wind, Leaf, Bike, Car } from 'lucide-react';
@@ -56,110 +55,81 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           @page { 
             size: A4 portrait; 
             margin: 0; 
-            padding: 0;
           }
           
-          html, body { 
+          body { 
             margin: 0;
             padding: 0;
             background: white;
-            width: 210mm;
-            height: 297mm;
+            overflow: hidden;
           }
 
-          .no-print { 
-            display: none !important; 
-          }
+          /* Hide non-printable elements */
+          .no-print { display: none !important; }
           
+          /* Main container reset for print */
           #root, .min-h-screen {
-            margin: 0 !important;
-            padding: 0 !important;
-            background: white !important;
-            height: auto !important;
-            min-height: auto !important;
-            display: block !important;
+            margin: 0;
+            padding: 0;
+            background: white;
+            height: 297mm;
+            max-height: 297mm;
+            display: block;
+            overflow: hidden;
           }
 
-          .shadow-2xl {
-            box-shadow: none !important;
-            margin: 0 !important;
-            border-radius: 0 !important;
-          }
-
+          /* The bulletin sheet itself */
           #bulletin-content {
             margin: 0 !important;
-            padding: 10mm !important;
+            padding: 8mm !important;
             width: 210mm !important;
             height: 297mm !important;
-            box-sizing: border-box !important;
+            max-height: 297mm !important;
             box-shadow: none !important;
             border: none !important;
-            background: white !important;
-            overflow: hidden !important;
-            page-break-after: avoid !important;
-            display: flex !important;
-            flex-direction: column !important;
+            position: relative;
+            background: white;
+            overflow: hidden;
+            box-sizing: border-box;
           }
 
-          /* Forcer les couleurs exactes à l'impression */
+          /* Print specific adjustments */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            color-adjust: exact !important;
           }
           
-          /* Éviter les page breaks */
-          section, table, .grid, header, footer {
-            page-break-inside: avoid !important;
+          /* Prevent breaks inside key elements */
+          section, table, .grid {
+            page-break-inside: avoid;
           }
 
-          /* Réduire les espacements pour tenir sur une page */
+          /* Reduce spacing for print */
           section {
-            margin-bottom: 0.5rem !important;
+            margin-bottom: 5mm !important;
           }
 
-          body {
-            font-size: 13px;
+          header {
+            padding-bottom: 3mm !important;
+            margin-bottom: 4mm !important;
           }
 
-          table {
-            font-size: 11px;
+          footer {
+            padding-top: 3mm !important;
           }
 
-          .mb-20 { margin-bottom: 0 !important; }
-          .mb-8 { margin-bottom: 0.5rem !important; }
-          .mb-6 { margin-bottom: 0.3rem !important; }
-          .mb-4 { margin-bottom: 0.2rem !important; }
-          .mb-3 { margin-bottom: 0.15rem !important; }
-          .mb-2 { margin-bottom: 0.1rem !important; }
-          .mb-1 { margin-bottom: 0.05rem !important; }
-
-          .p-8 { padding: 10mm !important; }
-          .p-6 { padding: 0.4rem !important; }
-          .p-5 { padding: 0.4rem !important; }
-          .p-4 { padding: 0.3rem !important; }
-          .p-3 { padding: 0.2rem !important; }
-
-          .gap-4 { gap: 0.5rem !important; }
-          .gap-8 { gap: 0.5rem !important; }
-
-          .w-24, .h-24 { width: 60px !important; height: 60px !important; }
-          .w-4, .h-4 { width: 14px !important; height: 14px !important; }
-
-          .shadow-sm, .shadow-lg, .shadow-2xl { box-shadow: none !important; }
-          .rounded-2xl, .rounded-xl, .rounded-lg { border-radius: 4px !important; }
-
-          table {
-            width: 100% !important;
-            border-collapse: collapse !important;
+          /* Force single page */
+          html, body {
+            height: 297mm !important;
+            max-height: 297mm !important;
+            overflow: hidden !important;
           }
-
-          thead tr { page-break-inside: avoid !important; }
-          tbody tr { page-break-inside: avoid !important; }
         }
 
+        /* Web view styles */
         @media screen {
           #bulletin-content {
+            /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
             min-height: 296mm;
             background: white;
@@ -367,8 +337,12 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           {/* FOOTER */}
           <footer className="mt-auto text-center border-t-2 border-blue-900 pt-4">
             <p className="font-bold text-blue-900 text-[11px] uppercase mb-1">Agence Nationale de la Météorologie (MALI MÉTÉO)</p>
-            <p className="text-[10px] text-slate-500"></p>
-            <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full"></p>
+            <p className="text-[10px] text-slate-500">
+              
+            </p>
+            <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full">
+              
+            </p>
           </footer>
 
         </div>
