@@ -1,3 +1,32 @@
+import { useRef } from 'react';
+import { DailySummary, getAQILabel, getHealthAdvice } from '@/lib/air-quality';
+import { Printer, Activity, AlertTriangle, Info, ThermometerSun, Wind, Leaf, Bike, Car } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import logoMaliMeteo from '@assets/Logo_Mali_Meteo.png';
+
+interface BulletinProps {
+  data: DailySummary;
+  onReset: () => void;
+}
+
+const COLORS = {
+  good: '#4ade80',
+  moderate: '#facc15',
+  unhealthySens: '#fb923c',
+  unhealthy: '#f87171',
+  veryUnhealthy: '#a855f7',
+  hazardous: '#be123c',
+};
+
+const getStatusColor = (aqi: number) => {
+  if (aqi <= 50) return COLORS.good;
+  if (aqi <= 100) return COLORS.moderate;
+  if (aqi <= 150) return COLORS.unhealthySens;
+  if (aqi <= 200) return COLORS.unhealthy;
+  if (aqi <= 300) return COLORS.veryUnhealthy;
+  return COLORS.hazardous;
+};
+
 export function Bulletin({ data, onReset }: BulletinProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -5,11 +34,12 @@ export function Bulletin({ data, onReset }: BulletinProps) {
     const originalTitle = document.title;
     const safeDate = data.date.replace(/[\/\\:*?"<>|]/g, '-');
     const filename = `Bulletin Qualité de l'air du ${safeDate}`;
-    
+
     document.title = filename;
 
     setTimeout(() => {
       window.print();
+
       setTimeout(() => {
         document.title = originalTitle;
       }, 500);
@@ -24,59 +54,48 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         @media print {
           @page { 
             size: A4 portrait; 
-            margin: 5mm !important; /* Réduire les marges de la page */
-          }
-          
-          body { 
             margin: 0;
-            padding: 0;
-            background: white;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+          }
+
+          html, body {
+            height: 297mm !important;
+            overflow: hidden !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
 
           /* Hide non-printable elements */
           .no-print { display: none !important; }
-          
-          /* Main container reset for print */
-          #root, .min-h-screen {
-            margin: 0 !important;
-            padding: 0 !important;
-            background: white;
-            height: auto;
-            min-height: 0;
-          }
 
-          /* The bulletin sheet itself */
+          /* Prevent any extra blank page */
           #bulletin-content {
             margin: 0 !important;
-            padding: 8mm !important; /* Réduit de 10mm à 8mm */
-            width: 100% !important; /* Utiliser toute la largeur disponible */
-            height: 100% !important; /* Utiliser toute la hauteur disponible */
-            min-height: auto !important; /* Retirer min-height fixe */
-            max-height: 100% !important; /* Empêcher le débordement */
+            padding: 10mm !important;
+            width: 210mm !important;
+            height: 277mm !important; /* 297mm minus padding */
+            max-height: 277mm !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
             box-shadow: none !important;
             border: none !important;
-            background: white;
-            overflow: hidden !important; /* Empêcher tout débordement */
+            background: white !important;
           }
 
-          /* Print specific adjustments */
+          #root, .min-h-screen {
+            height: auto !important;
+            min-height: 0 !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
+          }
+
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          
-          /* Prevent breaks inside key elements */
-          section, table, .grid, tbody, tr {
+
+          section, table, .grid {
             page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
-          
-          /* Force single page */
-          html, body {
-            height: 100% !important;
-            overflow: hidden !important;
           }
         }
 
@@ -84,16 +103,14 @@ export function Bulletin({ data, onReset }: BulletinProps) {
         @media screen {
           #bulletin-content {
             width: 210mm;
-            min-height: 297mm; /* Exactement A4 */
-            max-height: 297mm; /* Limiter la hauteur */
+            min-height: 296mm;
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
-            overflow: hidden; /* Empêcher le débordement en mode web */
           }
         }
       `}</style>
-      
+
       <div className="flex gap-4 mb-8 sticky top-4 z-50 bg-white/90 backdrop-blur p-3 rounded-full shadow-lg border no-print">
         <Button variant="outline" onClick={onReset} className="rounded-full">
           Nouveau
@@ -105,111 +122,113 @@ export function Bulletin({ data, onReset }: BulletinProps) {
       </div>
 
       <div className="shadow-2xl mb-20 bg-white rounded-lg overflow-hidden">
-        <div 
+        <div
           ref={contentRef}
           id="bulletin-content"
-          className="relative text-slate-800 flex flex-col p-6" /* Réduire le padding */
+          className="relative text-slate-800 flex flex-col p-[15mm] box-border"
         >
-          {/* HEADER - Réduit */}
-          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-3 mb-4"> {/* Réduit mb-6 à mb-4 */}
+          {/* HEADER */}
+          <header className="relative z-10 bg-white flex justify-between items-start border-b-2 border-blue-900 pb-4 mb-6 before:content-none after:content-none">
             <div className="w-1/4 flex flex-col items-center justify-center">
-               <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100 shadow-sm relative z-20"> {/* Réduit de w-24/h-24 à w-20/h-20 */}
-                 <img 
-                   src={logoMaliMeteo} 
-                   alt="Logo MALI METEO" 
-                   className="w-full h-full object-cover scale-110" 
-                 />
-               </div>
+              <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100 shadow-sm relative z-20">
+                <img
+                  src={logoMaliMeteo}
+                  alt="Logo MALI METEO"
+                  className="w-full h-full object-cover scale-110"
+                />
+              </div>
             </div>
-            
+
             <div className="w-2/4 text-center pt-2 relative z-20 bg-white">
-              <h2 className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-0.5">République du Mali</h2> {/* Réduit text-xs à text-[10px] */}
-              <h3 className="text-[9px] italic text-slate-400 mb-1.5">Un Peuple - Un But - Une Foi</h3> {/* Réduit text-[10px] à text-[9px] */}
-              <h1 className="text-2xl font-bold text-blue-900 uppercase font-serif leading-tight mb-1.5 bg-white">Bulletin<br/>Qualité de l'Air</h1> {/* Réduit text-3xl à text-2xl */}
-              <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wide px-3 py-0.5 bg-blue-50 rounded-full inline-block border border-blue-100 relative z-20">
+              <h2 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-1">République du Mali</h2>
+              <h3 className="text-[10px] italic text-slate-400 mb-2">Un Peuple - Un But - Une Foi</h3>
+              <h1 className="text-3xl font-bold text-blue-900 uppercase font-serif leading-tight mb-2 bg-white">
+                Bulletin<br />Qualité de l'Air
+              </h1>
+              <div className="text-xs font-bold text-blue-600 uppercase tracking-wide px-4 py-0.5 bg-blue-50 rounded-full inline-block border border-blue-100 relative z-20">
                 Zone de Bamako
               </div>
             </div>
 
-            <div className="w-1/4 text-right pt-2 relative z-20 bg-white"> {/* Réduit pt-4 à pt-2 */}
-              <div className="text-[9px] uppercase text-slate-400 mb-0.5 font-medium">Date du relevé</div> {/* Réduit text-[10px] à text-[9px] */}
-              <div className="font-bold text-lg text-blue-900 border-l-4 border-blue-900 pl-2"> {/* Réduit text-xl à text-lg */}
+            <div className="w-1/4 text-right pt-4 relative z-20 bg-white">
+              <div className="text-[10px] uppercase text-slate-400 mb-1 font-medium">Date du relevé</div>
+              <div className="font-bold text-xl text-blue-900 border-l-4 border-blue-900 pl-3">
                 {data.date}
               </div>
-              <div className="text-[9px] text-slate-500 mt-0.5 font-medium flex justify-end items-center gap-1"> {/* Réduit text-[10px] à text-[9px] */}
-                <Activity className="w-2.5 h-2.5 text-green-500" /> Validité: 24h {/* Réduit w-3/h-3 à w-2.5/h-2.5 */}
+              <div className="text-[10px] text-slate-500 mt-1 font-medium flex justify-end items-center gap-1">
+                <Activity className="w-3 h-3 text-green-500" /> Validité: 24h
               </div>
             </div>
           </header>
 
-          {/* SUMMARY SECTION - Réduit */}
-          <section className="mb-4"> {/* Réduit mb-8 à mb-4 */}
-            <div className="flex items-stretch bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-xl overflow-hidden shadow-sm"> {/* Réduit rounded-2xl à rounded-xl */}
-              <div className="w-1/3 p-4 flex flex-col items-center justify-center border-r border-slate-100"> {/* Réduit p-6 à p-4 */}
-                <div className="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider">Indice Global</div> {/* Réduit text-xs à text-[10px] */}
+          {/* SUMMARY SECTION */}
+          <section className="mb-8">
+            <div className="flex items-stretch bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="w-1/3 p-6 flex flex-col items-center justify-center border-r border-slate-100">
+                <div className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Indice Global</div>
                 <div className="relative">
-                  <div 
-                    className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg mb-2 relative z-10 border-4 border-white" /* Réduit w-24/h-24 à w-20/h-20, text-4xl à text-3xl */
+                  <div
+                    className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold text-white shadow-lg mb-3 relative z-10 border-4 border-white"
                     style={{ backgroundColor: getStatusColor(data.cityMaxAQI) }}
                   >
                     {data.cityMaxAQI}
                   </div>
                 </div>
-                <div className="font-bold text-md uppercase tracking-tight" style={{ color: getStatusColor(data.cityMaxAQI) }}> {/* Réduit text-lg à text-md */}
+                <div className="font-bold text-lg uppercase tracking-tight" style={{ color: getStatusColor(data.cityMaxAQI) }}>
                   {getAQILabel(data.cityMaxAQI)}
                 </div>
               </div>
-              <div className="w-2/3 p-6 flex flex-col justify-center"> {/* Réduit p-8 à p-6 */}
-                <h3 className="font-bold text-blue-900 uppercase mb-2 text-xs flex items-center gap-2"> {/* Réduit text-sm à text-xs */}
-                  <Activity className="w-4 h-4" /> {/* Réduit w-5/h-5 à w-4/h-4 */}
+              <div className="w-2/3 p-8 flex flex-col justify-center">
+                <h3 className="font-bold text-blue-900 uppercase mb-3 text-sm flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
                   Synthèse de la journée
                 </h3>
-                <p className="text-xs text-slate-700 text-justify leading-relaxed font-medium"> {/* Réduit text-sm à text-xs */}
-                  L'indice de qualité de l'air (AQI) atteint un maximum de <strong className="text-blue-900 text-md">{data.cityMaxAQI}</strong> aujourd'hui. {/* Réduit text-lg à text-md */}
+                <p className="text-sm text-slate-700 text-justify leading-relaxed font-medium">
+                  L'indice de qualité de l'air (AQI) atteint un maximum de <strong className="text-blue-900 text-lg">{data.cityMaxAQI}</strong> aujourd'hui.
                   La qualité de l'air est qualifiée de <strong style={{ color: getStatusColor(data.cityMaxAQI) }}>{getAQILabel(data.cityMaxAQI).toLowerCase()}</strong>.
-                  <br/><br/>
-                  Le polluant majoritaire observé sur le réseau de surveillance est le <strong className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-900 text-xs">{data.stations.find(s => s.aqi === data.cityMaxAQI)?.mainPollutant}</strong>.
+                  <br /><br />
+                  Le polluant majoritaire observé sur le réseau de surveillance est le <strong className="bg-slate-100 px-2 py-0.5 rounded text-slate-900">{data.stations.find(s => s.aqi === data.cityMaxAQI)?.mainPollutant}</strong>.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* DATA TABLE - Réduit */}
-          <section className="mb-4 flex-grow"> {/* Réduit mb-8 à mb-4 */}
-            <h3 className="font-bold text-blue-900 uppercase mb-2 text-xs border-b border-slate-200 pb-1 flex items-center gap-2"> {/* Réduit mb-4 à mb-2, text-sm à text-xs */}
-              <Wind className="w-3.5 h-3.5" /> {/* Réduit w-4/h-4 à w-3.5/h-3.5 */}
+          {/* DATA TABLE */}
+          <section className="mb-8 flex-grow">
+            <h3 className="font-bold text-blue-900 uppercase mb-4 text-sm border-b border-slate-200 pb-2 flex items-center gap-2">
+              <Wind className="w-4 h-4" />
               Détails du Réseau de Surveillance (Concentrations Max)
             </h3>
-            <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm"> {/* Réduit rounded-xl à rounded-lg */}
-              <table className="w-full text-[10px] border-collapse"> {/* Réduit text-xs à text-[10px] */}
+            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+              <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-800 text-white">
-                    <th className="p-2 text-left font-medium w-[25%]">Station</th> {/* Réduit p-3 à p-2 */}
-                    <th className="p-2 text-center font-medium border-l border-slate-700 w-[10%]">NO2<br/><span className="opacity-60 text-[8px]">ppb</span></th> {/* Réduit p-3 à p-2 */}
-                    <th className="p-2 text-center font-medium border-l border-slate-700 w-[10%]">SO2<br/><span className="opacity-60 text-[8px]">ppb</span></th>
-                    <th className="p-2 text-center font-medium border-l border-slate-700 w-[10%]">CO<br/><span className="opacity-60 text-[8px]">ppb</span></th>
-                    <th className="p-2 text-center font-medium border-l border-slate-700 w-[10%]">O3<br/><span className="opacity-60 text-[8px]">ppb</span></th>
-                    <th className="p-2 text-center font-medium border-l border-slate-700 w-[10%]">PM2.5<br/><span className="opacity-60 text-[8px]">µg/m³</span></th>
-                    <th className="p-2 text-center font-medium border-l border-slate-700 w-[10%]">PM10<br/><span className="opacity-60 text-[8px]">µg/m³</span></th>
-                    <th className="p-2 text-center font-bold border-l border-slate-700 bg-blue-900 w-[15%]">AQI</th>
+                    <th className="p-3 text-left font-medium w-[25%]">Station</th>
+                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">NO2<br /><span className="opacity-60 text-[9px]">ppb</span></th>
+                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">SO2<br /><span className="opacity-60 text-[9px]">ppb</span></th>
+                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">CO<br /><span className="opacity-60 text-[9px]">ppb</span></th>
+                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">O3<br /><span className="opacity-60 text-[9px]">ppb</span></th>
+                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">PM2.5<br /><span className="opacity-60 text-[9px]">µg/m³</span></th>
+                    <th className="p-3 text-center font-medium border-l border-slate-700 w-[10%]">PM10<br /><span className="opacity-60 text-[9px]">µg/m³</span></th>
+                    <th className="p-3 text-center font-bold border-l border-slate-700 bg-blue-900 w-[15%]">AQI</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.stations.map((s, i) => (
                     <tr key={i} className="text-slate-700 odd:bg-white even:bg-slate-50 border-b border-slate-100 last:border-0 hover:bg-blue-50">
-                      <td className="p-2 font-bold text-slate-800 truncate" title={s.name}> {/* Réduit p-3 à p-2 */}
+                      <td className="p-3 font-bold text-slate-800 truncate" title={s.name}>
                         {s.name.replace('ML_', '').replace(/_/g, ' ').replace('Qualité Air', '').replace('QA', '')}
                       </td>
-                      <td className="p-2 text-center border-l border-slate-200">{s.maxNO2.toFixed(0)}</td>
-                      <td className="p-2 text-center border-l border-slate-200">{s.maxSO2.toFixed(0)}</td>
-                      <td className="p-2 text-center border-l border-slate-200">{s.maxCO.toFixed(0)}</td>
-                      <td className="p-2 text-center border-l border-slate-200">{s.maxO3.toFixed(0)}</td>
-                      <td className="p-2 text-center border-l border-slate-200">{s.maxPM25.toFixed(0)}</td>
-                      <td className="p-2 text-center border-l border-slate-200">{s.maxPM10.toFixed(0)}</td>
-                      <td className="p-2 text-center font-bold border-l border-slate-200 bg-blue-50/30">
-                        <div className="flex items-center justify-center gap-1"> {/* Réduit gap-2 à gap-1 */}
-                           <span className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: getStatusColor(s.aqi) }} /> {/* Réduit w-3/h-3 à w-2.5/h-2.5 */}
-                           {s.aqi}
+                      <td className="p-3 text-center border-l border-slate-200">{s.maxNO2.toFixed(0)}</td>
+                      <td className="p-3 text-center border-l border-slate-200">{s.maxSO2.toFixed(0)}</td>
+                      <td className="p-3 text-center border-l border-slate-200">{s.maxCO.toFixed(0)}</td>
+                      <td className="p-3 text-center border-l border-slate-200">{s.maxO3.toFixed(0)}</td>
+                      <td className="p-3 text-center border-l border-slate-200">{s.maxPM25.toFixed(0)}</td>
+                      <td className="p-3 text-center border-l border-slate-200">{s.maxPM10.toFixed(0)}</td>
+                      <td className="p-3 text-center font-bold border-l border-slate-200 bg-blue-50/30">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: getStatusColor(s.aqi) }} />
+                          {s.aqi}
                         </div>
                       </td>
                     </tr>
@@ -219,88 +238,85 @@ export function Bulletin({ data, onReset }: BulletinProps) {
             </div>
           </section>
 
-          {/* ECO GESTE - Réduit */}
-          <section className="mb-4 grid grid-cols-3 gap-3"> {/* Réduit mb-8 à mb-4, gap-4 à gap-3 */}
-             <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex items-center gap-3 shadow-sm"> {/* Réduit rounded-xl à rounded-lg, p-4 à p-3 */}
-                <div className="bg-emerald-100 p-2 rounded-full text-emerald-700 flex-shrink-0"> {/* Réduit p-3 à p-2 */}
-                   <Leaf className="w-5 h-5" /> {/* Réduit w-6/h-6 à w-5/h-5 */}
-                </div>
-                <div>
-                   <h3 className="font-bold text-emerald-900 text-xs uppercase mb-0.5">Le Geste Eco-Citoyen</h3> {/* Réduit mb-1 à mb-0.5 */}
-                   <p className="text-[10px] text-emerald-800 leading-snug"> {/* Réduit text-xs à text-[10px] */}
-                      Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
-                   </p>
-                </div>
-             </div>
-             <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex flex-col justify-center items-center text-center shadow-sm"> {/* Réduit rounded-xl à rounded-lg, p-4 à p-3 */}
-                <div className="flex gap-1.5 mb-1.5 text-blue-400"> {/* Réduit gap-2 à gap-1.5, mb-2 à mb-1.5 */}
-                   <Bike className="w-4 h-4" /> {/* Réduit w-5/h-5 à w-4/h-4 */}
-                   <Car className="w-4 h-4 opacity-50" />
-                </div>
-                <div className="text-[9px] font-bold text-blue-800 uppercase">Mobilité Douce</div> {/* Réduit text-[10px] à text-[9px] */}
-             </div>
+          {/* ECO GESTE */}
+          <section className="mb-8 grid grid-cols-3 gap-4">
+            <div className="col-span-2 bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+              <div className="bg-emerald-100 p-3 rounded-full text-emerald-700 flex-shrink-0">
+                <Leaf className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-emerald-900 text-xs uppercase mb-1">Le Geste Eco-Citoyen</h3>
+                <p className="text-xs text-emerald-800 leading-snug">
+                  Privilégiez le covoiturage ou les transports en commun. Une voiture en moins = moins de pollution.
+                </p>
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
+              <div className="flex gap-2 mb-2 text-blue-400">
+                <Bike className="w-5 h-5" />
+                <Car className="w-5 h-5 opacity-50" />
+              </div>
+              <div className="text-[10px] font-bold text-blue-800 uppercase">Mobilité Douce</div>
+            </div>
           </section>
 
-          {/* LEGEND & ADVICE GRID - Réduit */}
-          <div className="grid grid-cols-2 gap-4 mb-3"> {/* Réduit gap-8 à gap-4, mb-4 à mb-3 */}
-             {/* Legend */}
-             <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm"> {/* Réduit rounded-xl à rounded-lg, p-5 à p-4 */}
-                <h3 className="font-bold text-slate-700 uppercase mb-2 text-[10px] flex items-center gap-1 border-b pb-1.5"> {/* Réduit mb-3 à mb-2, text-[11px] à text-[10px] */}
-                  <Info className="w-3.5 h-3.5" /> {/* Réduit w-4/h-4 à w-3.5/h-3.5 */}
-                  Légende AQI (Indice de Qualité)
-                </h3>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5"> {/* Réduit gap-x-3 à gap-x-2, gap-y-2 à gap-y-1.5 */}
-                  {[
-                    { l: 'Bonne (0-50)', c: COLORS.good },
-                    { l: 'Modérée (51-100)', c: COLORS.moderate },
-                    { l: 'Médiocre (101-150)', c: COLORS.unhealthySens },
-                    { l: 'Mauvaise (151-200)', c: COLORS.unhealthy },
-                    { l: 'Très Mauv. (201-300)', c: COLORS.veryUnhealthy },
-                    { l: 'Danger (300+)', c: COLORS.hazardous },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5"> {/* Réduit gap-2 à gap-1.5 */}
-                      <div className="w-2.5 h-2.5 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} /> {/* Réduit w-3/h-3 à w-2.5/h-2.5 */}
-                      <span className="text-[9px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span> {/* Réduit text-[10px] à text-[9px] */}
-                    </div>
-                  ))}
-                </div>
-             </div>
+          {/* LEGEND & ADVICE GRID */}
+          <div className="grid grid-cols-2 gap-8 mb-4">
+            {/* Legend */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+              <h3 className="font-bold text-slate-700 uppercase mb-3 text-[11px] flex items-center gap-2 border-b pb-2">
+                <Info className="w-4 h-4" />
+                Légende AQI (Indice de Qualité)
+              </h3>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                {[
+                  { l: 'Bonne (0-50)', c: COLORS.good },
+                  { l: 'Modérée (51-100)', c: COLORS.moderate },
+                  { l: 'Médiocre (101-150)', c: COLORS.unhealthySens },
+                  { l: 'Mauvaise (151-200)', c: COLORS.unhealthy },
+                  { l: 'Très Mauv. (201-300)', c: COLORS.veryUnhealthy },
+                  { l: 'Danger (300+)', c: COLORS.hazardous },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style={{ backgroundColor: item.c }} />
+                    <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">{item.l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-             {/* Advice */}
-             <div className="bg-orange-50/50 border border-orange-100 rounded-lg p-4 shadow-sm"> {/* Réduit rounded-xl à rounded-lg, p-5 à p-4 */}
-                <h3 className="font-bold text-orange-900 uppercase mb-2 text-[10px] flex items-center gap-1 border-b border-orange-200 pb-1.5">
-                  <ThermometerSun className="w-3.5 h-3.5" /> {/* Réduit w-4/h-4 à w-3.5/h-3.5 */}
-                  Recommandations
-                </h3>
-                <div className="space-y-2"> {/* Réduit space-y-3 à space-y-2 */}
-                  <div>
-                    <span className="text-[9px] font-bold uppercase text-orange-800 block mb-0.5 flex items-center gap-1"> {/* Réduit text-[10px] à text-[9px], mb-1 à mb-0.5 */}
-                      <Activity className="w-2.5 h-2.5" /> {/* Réduit w-3/h-3 à w-2.5/h-2.5 */}
-                      Population Générale
-                    </span>
-                    <p className="text-[9px] text-slate-700 leading-tight pl-3 border-l-2 border-orange-200">{advice.general}</p> {/* Réduit text-[10px] à text-[9px], pl-4 à pl-3 */}
-                  </div>
-                  <div>
-                    <span className="text-[9px] font-bold uppercase text-orange-800 block mb-0.5 flex items-center gap-1">
-                      <AlertTriangle className="w-2.5 h-2.5" /> {/* Réduit w-3/h-3 à w-2.5/h-2.5 */}
-                      Personnes Vulnérables
-                    </span>
-                    <p className="text-[9px] text-slate-700 leading-tight pl-3 border-l-2 border-orange-200">{advice.sensitive}</p> {/* Réduit text-[10px] à text-[9px], pl-4 à pl-3 */}
-                  </div>
+            {/* Advice */}
+            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-5 shadow-sm">
+              <h3 className="font-bold text-orange-900 uppercase mb-3 text-[11px] flex items-center gap-2 border-b border-orange-200 pb-2">
+                <ThermometerSun className="w-4 h-4" />
+                Recommandations
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
+                    <Activity className="w-3 h-3" /> Population Générale
+                  </span>
+                  <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.general}</p>
                 </div>
-             </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-orange-800 block mb-1 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Personnes Vulnérables
+                  </span>
+                  <p className="text-[10px] text-slate-700 leading-tight pl-4 border-l-2 border-orange-200">{advice.sensitive}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* FOOTER - Réduit */}
-          <footer className="mt-auto text-center border-t-2 border-blue-900 pt-3"> {/* Réduit pt-4 à pt-3 */}
-            <p className="font-bold text-blue-900 text-[10px] uppercase mb-0.5">Agence Nationale de la Météorologie (MALI MÉTÉO)</p> {/* Réduit text-[11px] à text-[10px], mb-1 à mb-0.5 */}
-            <p className="text-[9px] text-slate-500">
-              
+          {/* FOOTER */}
+          <footer className="mt-auto text-center border-t-2 border-blue-900 pt-4">
+            <p className="font-bold text-blue-900 text-[11px] uppercase mb-1">
+              Agence Nationale de la Météorologie (MALI MÉTÉO)
             </p>
-            <p className="text-[8px] text-slate-400 mt-1 italic bg-slate-50 inline-block px-3 py-0.5 rounded-full"> {/* Réduit text-[9px] à text-[8px], mt-2 à mt-1 */}
-              
-            </p>
+            <p className="text-[10px] text-slate-500"></p>
+            <p className="text-[9px] text-slate-400 mt-2 italic bg-slate-50 inline-block px-4 py-1 rounded-full"></p>
           </footer>
+
         </div>
       </div>
     </div>
