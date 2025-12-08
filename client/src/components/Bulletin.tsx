@@ -61,9 +61,9 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           }
           
           body { 
-            margin: 0;
-            padding: 0;
-            background: white;
+            margin: 0 !important; /* Ajout d'un !important ici */
+            padding: 0 !important;
+            background: white !important;
           }
 
           /* Hide non-printable elements */
@@ -71,41 +71,59 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           
           /* Main container reset for print */
           #root, .min-h-screen {
-            margin: 0;
-            padding: 0;
-            background: white;
-            height: auto;
-            min-height: 0;
-            display: block;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            height: auto !important;
+            min-height: 0 !important;
+            display: block !important;
           }
 
           /* Annule la marge extérieure du conteneur parent (mb-20) et le shadow */
           .shadow-2xl.mb-20 {
             margin-bottom: 0 !important;
             box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+          }
+          
+          /* Annule le padding extérieur du corps de page */
+          .min-h-screen.p-8 {
+             padding: 0 !important;
           }
 
-          /* The bulletin sheet itself (AJUSTEMENTS MAJEURS ICI) */
+
+          /* The bulletin sheet itself (AJUSTEMENTS FINAUX ICI) */
           #bulletin-content {
             margin: 0 !important;
-            /* Réduit le padding vertical à 8mm pour une marge de sécurité */
-            padding: 8mm 15mm !important; 
+            /* Padding vertical réduit à 7mm pour une sécurité maximale */
+            padding: 7mm 15mm !important; 
             width: 210mm !important;
-            /* Nouvelle hauteur minimale réduite pour la sécurité anti-débordement */
-            min-height: 280mm !important; 
+            /* Hauteur minimale très réduite */
+            min-height: 275mm !important; 
+            max-height: 297mm !important; /* S'assurer de ne pas dépasser la taille max A4 */
             box-shadow: none !important;
             border: none !important;
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: white;
-            overflow: visible;
-            page-break-after: avoid; 
+            position: relative !important; /* Assurez-vous que la position n'interfère pas */
+            top: 0 !important;
+            left: 0 !important;
+            background: white !important;
+            overflow: hidden !important; /* Cache tout ce qui déborde */
+            page-break-after: avoid !important; 
           }
 
-          /* Force une réduction du padding du footer pour gagner de l'espace */
+          /* Force une réduction du padding du footer */
           footer {
               padding-top: 5mm !important;
+          }
+
+          /* Réduire l'espace vertical entre les sections */
+          section {
+            margin-bottom: 20px !important; /* Remplacer mb-8 par un pixel value plus petit */
+          }
+          .grid.gap-8.mb-4 {
+            margin-bottom: 10px !important;
+            gap: 1rem !important; /* Réduire les espaces entre les éléments de la grille si possible */
           }
 
           /* Print specific adjustments */
@@ -125,7 +143,7 @@ export function Bulletin({ data, onReset }: BulletinProps) {
           #bulletin-content {
             /* Fixed A4 Aspect Ratio for Web Preview */
             width: 210mm;
-            min-height: 296mm; /* Garder 296mm ou 297mm en vue web pour la preview A4 */
+            min-height: 296mm; 
             background: white;
             margin: 0 auto;
             box-sizing: border-box;
